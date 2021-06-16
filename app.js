@@ -86,6 +86,11 @@ vehicles.push({
   info: undefined,
   extra: undefined,
 });
+vehicles.push({
+  vehicle: mockVehicles.ev1,
+  info: mockVehicles.ev1_info,
+  extra: makeExtra(mockVehicles.ev1_info),
+});
 
 // This code is here just to enforce that the above code added at least 1 vehicle.
 if (vehicles.length < 1) {
