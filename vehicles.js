@@ -123,3 +123,103 @@ exports.ice2 = {
   vehicleAuthorizationIndicator: 0,
   serviceCompatible: false,
 };
+
+exports.ev1 = {
+  vehicleId: '22221111111111151111111111112222',
+  make: 'F',
+  modelName: 'Mustang Mach-E GT',
+  modelYear: '2021',
+  color: 'Grabber Blue Metallic',
+  nickName: 'EV test car #1',
+  modemEnabled: true,
+  vehicleAuthorizationIndicator: 1,
+  serviceCompatible: true,
+};
+
+exports.ev1_info = {
+  engineType: 'EV',
+  lastUpdated: timestamp.now(),
+  vehicleDetails: {
+    fuelLevel: {
+      value: null,
+      distanceToEmpty: 0.0,
+      timestamp: null,
+    },
+    batteryChargeLevel: {
+      value: 80, // 0 to 100% charged
+      distanceToEmpty: 304.0, // km (range of Mach-E GT package was about 235 mi/380 km)
+      timestamp: timestamp.now(),
+    },
+    mileage: 310.7,
+    odometer: 500.0,
+  },
+  vehicleStatus: {
+    tirePressureWarning: false,
+    deepSleepInProgress: false,
+    firmwareUpgradeInProgress: false,
+    remoteStartStatus: {
+      status: 'ENGINE_STOPPED',
+      duration: 0, // REVIEW: Is this how long the engine has been off?
+      timeStamp: timestamp.now(),
+    },
+    chargingStatus: {
+      value: 'Ready',
+      timeStamp: timestamp.now(),
+      chargeStartTime: '06-08-2021 11:58:00',
+      chargeEndTime: '06-08-2021 12:29:00',
+    },
+    plugStatus: {
+      value: true,
+      timeStamp: timestamp.now(),
+    },
+    ignitionStatus: {
+      value: 'OFF',
+      timeStamp: timestamp.now(),
+    },
+    doorStatus: [
+      {
+        vehicleDoor: 'UNSPECIFIED_FRONT',
+        value: 'CLOSED',
+        vehicleOccupantRole: 'DRIVER',
+        timeStamp: timestamp.now(),
+      },
+      {
+        vehicleDoor: 'UNSPECIFIED_FRONT',
+        value: 'CLOSED',
+        vehicleOccupantRole: 'PASSENGER',
+        timeStamp: timestamp.now(),
+      },
+      {
+        vehicleDoor: 'HOOD_DOOR',
+        value: 'CLOSED',
+        vehicleOccupantRole: 'NOT_APPLICABLE',
+        timeStamp: timestamp.now(),
+      },
+      {
+        vehicleDoor: 'REAR_LEFT',
+        value: 'CLOSED',
+        vehicleOccupantRole: 'PASSENGER',
+        timeStamp: timestamp.now(),
+      },
+      {
+        vehicleDoor: 'REAR_RIGHT',
+        value: 'CLOSED',
+        vehicleOccupantRole: 'PASSENGER',
+        timeStamp: timestamp.now(),
+      },
+      {
+        vehicleDoor: 'REAR_CARGO', // REVIEW: This may not be the correct value.
+        value: 'CLOSED',
+        vehicleOccupantRole: 'NOT_APPLICABLE', // REVIEW: This may not be the correct value.
+        timeStamp: timestamp.now(),
+      },
+    ],
+    vehicleLocation: {
+      longitude: '-95.905261',
+      latitude: '36.113439',
+      speed: 0.0,
+      direction: 'East',
+      timeStamp: timestamp.now(),
+    },
+  },
+};
