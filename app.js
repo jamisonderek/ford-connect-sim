@@ -314,7 +314,6 @@ function sendNotFound(req, res) {
     status: 'FAILED',
   };
 
-  // TEST: #14 - If the /wake route for GET calls, make sure we are returning the proper value.
   // TEST: Retest this logic.
 
   if (req.method === 'POST') {
@@ -829,11 +828,6 @@ app.post('/api/fordconnect/vehicles/v1/:vehicleId/wake', (req, res) => {
     commands.wake.push(command);
     match.extra.lastWake = Date.now();
   });
-});
-
-app.get('/api/fordconnect/vehicles/v1/:vehicleId/wake/:commandId', (req, res) => {
-  // REVIEW: Currently the FordConnect server does not support this route.
-  vehicleIdGetCommandStatus(req, res, commands.wake, () => { });
 });
 
 app.post('/api/fordconnect/vehicles/v1/:vehicleId/startCharge', (req, res) => {
