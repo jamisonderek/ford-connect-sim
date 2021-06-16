@@ -193,7 +193,7 @@ function isTokenExpired(req) {
   const reqToken = getTokenFromRequest(req);
 
   if (reqToken !== token) {
-    // TEST: How does the FordConnect server work; should we allow all non-expired tokens?
+    // TEST: #13 - How does the FordConnect server work; should we allow all non-expired tokens?
     //  (or should only allow the most recent token)?
     console.error('ERROR: The token does not match the expected value.');
     return true;
@@ -309,7 +309,7 @@ function sendNotFound(req, res) {
     status: 'FAILED',
   };
 
-  // TEST: If the /wake route for GET calls, make sure we are returning the proper value.
+  // TEST: #14 - If the /wake route for GET calls, make sure we are returning the proper value.
   // TEST: Retest this logic.
 
   if (req.method === 'POST') {
@@ -560,7 +560,7 @@ function getCommand(req, commandArray) {
   let match;
   Object.keys(searchLists).forEach((searchList) => {
     const matches = searchLists[searchList].filter(
-      // TEST: Is there a timeout on how long a command is valid for?
+      // TEST: #15 - Is there a timeout on how long a command is valid for?
       (c) => c.commandId === commandId && c.vehicleId === vehicleId,
     );
 
@@ -791,7 +791,7 @@ app.post('/api/fordconnect/vehicles/v1/:vehicleId/startEngine', (req, res) => {
     match.extra.lastStarted = Date.now();
     match.info.vehicleStatus.remoteStartStatus = {
       status: 'ENGINE_RUNNING',
-      duration: 0, // TODO: Does this need to change over time?
+      duration: 0, // #10 - TODO: Does this need to change over time?
       timeStamp: timestamp.now(),
     };
     match.info.vehicleStatus.ignitionStatus.value = 'ON';
@@ -807,8 +807,8 @@ app.post('/api/fordconnect/vehicles/v1/:vehicleId/stopEngine', (req, res) => {
     commands.stopEngine.push(command);
     match.extra.lastStarted = Date.now();
     match.info.vehicleStatus.remoteStartStatus = {
-      status: 'ENGINE_STOPPED', // REVIEW: Based on SPEC.
-      duration: 0, // TODO: Does this need to change over time (minutes)?
+      status: 'ENGINE_STOPPED', // REVIEW: #17 - Based on SPEC.
+      duration: 0, // #10 - TODO: Does this need to change over time (minutes)?
       timeStamp: timestamp.now(),
     };
     match.info.vehicleStatus.ignitionStatus.value = 'OFF'; // REVIEW: Based on SPEC.
