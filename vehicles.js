@@ -228,9 +228,13 @@ exports.ev1_evdata = {
   departureTimes: [
     {
       dayOfWeek: 'FRIDAY', // The Ford UX allows two entries per day.
-      enabled: true,
       time: '17:00', // NOTE: API response will be two properties (hour, minutes).
       preConditioningSetting: 'MEDIUM', // OFF, COOL, MEDIUM, WARM.
+    },
+    {
+      dayOfWeek: 'TUESDAY',
+      time: '8:00',
+      preConditioningSetting: 'WARM',
     },
   ],
   chargeSchedules: [

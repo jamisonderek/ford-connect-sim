@@ -903,7 +903,98 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/chargeSchedules', (req, res) =>
   return undefined; // getVehicleOrSendError send response.
 });
 
-// TODO: /departureTimes
+const DAYS = {
+  MONDAY: 1,
+  TUESDAY: 2,
+  WEDNESDAY: 3,
+  THURSDAY: 4,
+  FRIDAY: 5,
+  SATURDAY: 6,
+  SUNDAY: 7,
+};
+
+// TODO: #24 - Allow changing simulated day.
+// NOTE: This is a simulated day, not actual day.
+let today = {
+  hour: 16,
+  minutes: 10,
+  dayOfWeek: DAYS.THURSDAY,
+};
+
+/**
+ * The number of milliseconds until the departureTime event.
+ *
+ * @param {*} departureTime an evdata.departureTimes[x] object.
+ * @returns The number of milliseconds from today (simulated time) until the departureTime.
+ */
+function msUntilDepartureTime(departureTime) {
+  const dow = DAYS[departureTime.dayOfWeek];
+  // Create a timestamp (1-Mar-2021 was a Monday, 5-Mar-2021 was a Friday, etc.)
+  const dt = Date.parse(`${dow} Mar 2021 ${departureTime.time}`);
+  const nt = Date.parse(`${today.dayOfWeek} Mar 2021 ${today.hour}:${today.minutes}`);
+
+  let diff = dt - nt;
+  if (diff < 0) {
+    // The time was in the past, so add 7 days to find the next occurance.
+    diff += 7 * 24 * 60 * 60 * 1000;
+  }
+
+  return diff;
+}
+
+// Returns the next departure time.
+app.get('/api/fordconnect/vehicles/v1/:vehicleId/departureTimes', (req, res) => {
+  if (isTokenExpired(req)) {
+    return sendTokenExpiredJson(req, res);
+  }
+
+  const match = getVehicleOrSendError(req, res);
+  if (match) {
+    if (match.info && match.info.engineType !== 'EV') {
+      return sendVehicleNotAuthorized(req, res, false);
+    }
+
+    let response;
+
+    if (match.evdata && match.evdata.departureTimes && match.evdata.departureTimes.length > 0) {
+      let minIndex = 0;
+      let minValue = msUntilDepartureTime(match.evdata.departureTimes[0]);
+      for (let i = 0; i < match.evdata.departureTimes.length; i += 1) {
+        const v = msUntilDepartureTime(match.evdata.departureTimes[i]);
+        if (v < minValue) {
+          minValue = v;
+          minIndex = i;
+        }
+      }
+      response = {
+        status: 'SUCCESS',
+        departureTimes: {
+          dayOfWeek: match.evdata.departureTimes[minIndex].dayOfWeek,
+          enabled: true,
+          hour: parseInt(match.evdata.departureTimes[minIndex].time.split(':')[0], 10),
+          minutes: parseInt(match.evdata.departureTimes[minIndex].time.split(':')[1], 10),
+          preConditioningSetting: match.evdata.departureTimes[minIndex].preConditioningSetting,
+        },
+      };
+    } else {
+      response = {
+        status: 'SUCCESS',
+        departureTimes: {
+          dayOfWeek: 'MONDAY',
+          enabled: false,
+          hour: 0,
+          minutes: 0,
+          preConditioningSetting: 'OFF',
+        },
+      };
+    }
+
+    res.statusCode = 200;
+    res.json(response);
+  }
+
+  return undefined; // getVehicleOrSendError send response.
+});
 
 app.post('/api/fordconnect/vehicles/v1/:vehicleId/status', (req, res) => {
   vehicleIdPostMethod(req, res, false, (_req, _res, match, command) => {
