@@ -1104,7 +1104,7 @@ app.post('/sim/today', (req, res) => {
   res.statusCode = 200;
   return res.json({
     status: 'SUCCESS',
-    msg: 'Date sent successfully.',
+    msg: 'Date set successfully.',
   });
 });
 
