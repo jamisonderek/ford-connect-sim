@@ -867,20 +867,19 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/chargeSchedules', (req, res) =>
 
   const match = getVehicleOrSendError(req, res);
   if (match) {
-    if (!match.evdata || (match.info && match.info.engineType !== 'EV')) {
-      return sendUnsupportedVehicle(req, res);
-    }
-
-    const matchLat = parseFloat(match.info.vehicleStatus.vehicleLocation.latitude);
-    const matchLong = parseFloat(match.info.vehicleStatus.vehicleLocation.longitude);
-
     let nearbySchedule;
-    for (let i = 0; i < match.evdata.chargeSchedules.length; i += 1) {
-      const s = match.evdata.chargeSchedules[i];
-      const sLat = parseFloat(s.latitude);
-      const sLong = parseFloat(s.longitude);
-      if (near(matchLat, matchLong, sLat, sLong)) {
-        nearbySchedule = s;
+
+    if (match.evdata && (match.info && match.info.engineType === 'EV')) {
+      const matchLat = parseFloat(match.info.vehicleStatus.vehicleLocation.latitude);
+      const matchLong = parseFloat(match.info.vehicleStatus.vehicleLocation.longitude);
+
+      for (let i = 0; i < match.evdata.chargeSchedules.length; i += 1) {
+        const s = match.evdata.chargeSchedules[i];
+        const sLat = parseFloat(s.latitude);
+        const sLong = parseFloat(s.longitude);
+        if (near(matchLat, matchLong, sLat, sLong)) {
+          nearbySchedule = s;
+        }
       }
     }
 
