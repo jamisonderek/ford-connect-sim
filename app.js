@@ -1194,6 +1194,40 @@ app.post('/sim/modem/:vehicleId', (req, res) => {
   return undefined;
 });
 
+// Sets the deep sleep for the vehicle.
+//
+// param: sleep  (true/false)
+// expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
+//
+// example query: /sim/modem/22221111111111151111111111112222?enabled=false
+app.post('/sim/deepsleep/:vehicleId', (req, res) => {
+  const { sleep } = req.query;
+  const match = getVehicleOrSendError(req, res);
+
+  if (match) {
+    const setting = toBoolean(sleep);
+
+    if (setting === undefined) {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'parameter \'sleep\' must be (true or false).',
+      });
+    }
+
+    match.info.vehicleStatus.deepSleepInProgress = setting;
+    // TODO: #25 - Should features get disabled when deepSleepInProgress?
+
+    res.statusCode = 200;
+    return res.json({
+      status: 'SUCCESS',
+      msg: `Modem enabled set to ${setting} successfully.`,
+    });
+  }
+
+  return undefined;
+});
+
 // Sets the firmwareUpgradeInProgess on a vehicle.
 //
 // param: warning  (true/false)
