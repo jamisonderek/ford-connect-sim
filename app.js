@@ -1110,3 +1110,56 @@ app.post('/sim/today', (req, res) => {
 app.use((req, res) => {
   res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
 });
+
+/**
+ * Parses a query parameter into a boolean value.
+ *
+ * @param {*} value A query parameter to convert to boolean.
+ * @returns Boolean or undefined. parsed value (true, false) or undefined if not parsable.
+ */
+function toBoolean(value) {
+  let bool;
+  if (value !== undefined) {
+    value = value.toLowerCase();
+    if (value === 'false' || value === 'no') {
+      bool = false;
+    } else if (value === 'true' || value === 'yes') {
+      bool = true;
+    }
+  }
+
+  return bool;
+}
+
+// Sets the tirePressureWarning on a vehicle.
+//
+// param: warning  (true/false)
+// expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
+//
+// example query: /sim/psi/22221111111111151111111111112222?warning=true
+app.post('/sim/psi/:vehicleId', (req, res) => {
+  const { warning } = req.query;
+  const match = getVehicleOrSendError(req, res);
+
+  if (match) {
+    const setting = toBoolean(warning);
+
+    if (setting === undefined) {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'parameter \'warning\' must be (true or false).',
+      });
+    }
+
+    match.info.vehicleStatus.tirePressureWarning = setting;
+
+    res.statusCode = 200;
+    return res.json({
+      status: 'SUCCESS',
+      msg: `PSI warning set to ${setting} successfully.`,
+    });
+  }
+
+  return undefined;
+});
