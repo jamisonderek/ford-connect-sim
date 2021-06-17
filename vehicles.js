@@ -223,3 +223,94 @@ exports.ev1_info = {
     },
   },
 };
+
+exports.ev1_evdata = {
+  departureTimes: [
+    {
+      dayOfWeek: 'FRIDAY', // The Ford UX allows two entries per day.
+      enabled: true,
+      time: '17:00', // NOTE: API response will be two properties (hour, minutes).
+      preConditioningSetting: 'MEDIUM', // OFF, COOL, MEDIUM, WARM.
+    },
+  ],
+  chargeSchedules: [
+    {
+      name: 'Fowler Ford',
+      latitude: '36.113430',
+      longitude: '-95.905260',
+      desiredChargeLevel: 80,
+      schedule: [
+        {
+          days: 'WEEKDAY',
+          chargeWindows: [
+            {
+              startTime: '23:00',
+              endTime: '07:00',
+            },
+          ],
+        },
+        {
+          days: 'WEEKEND',
+          chargeWindows: [
+            {
+              startTime: '0:00',
+              endTime: '0:00',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: '3905 S Memorial Dr',
+      latitude: '36.105539',
+      longitude: '-95.885703',
+      desiredChargeLevel: 80,
+      schedule: [
+        {
+          days: 'WEEKDAY',
+          chargeWindows: [
+            {
+              startTime: '23:00',
+              endTime: '07:00',
+            },
+          ],
+        },
+        {
+          days: 'WEEKEND',
+          chargeWindows: [
+            {
+              startTime: '0:00',
+              endTime: '0:00',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: '2010 N Memorial Dr',
+      latitude: '36.183432',
+      longitude: '-95.887811',
+      desiredChargeLevel: 70,
+      schedule: [
+        {
+          days: 'WEEKDAY',
+          chargeWindows: [
+            {
+              startTime: '23:00',
+              endTime: '07:00',
+            },
+          ],
+        },
+        {
+          days: 'WEEKEND',
+          chargeWindows: [
+            {
+              startTime: '0:00',
+              endTime: '0:00',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};

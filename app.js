@@ -90,6 +90,7 @@ vehicles.push({
   vehicle: mockVehicles.ev1,
   info: mockVehicles.ev1_info,
   extra: makeExtra(mockVehicles.ev1_info),
+  evdata: mockVehicles.ev1_evdata,
 });
 
 // This code is here just to enforce that the above code added at least 1 vehicle.
@@ -844,7 +845,64 @@ app.post('/api/fordconnect/vehicles/v1/:vehicleId/stopCharge', (req, res) => {
   });
 });
 
-// TODO: /chargeSchedules
+/**
+ * Compares two coordinates (lat, long) to see if they are 'near' each other.
+ * @param {*} lat1 Latitude for coordinate 1
+ * @param {*} long1 Longitude for coordinate 1
+ * @param {*} lat2 Latitude for coordinate 2
+ * @param {*} long2 Longitude for coordinate 2
+ * @returns Boolean. true is coordinate 1 and coordinate 2 are near each other.
+ */
+function near(lat1, long1, lat2, long2) {
+  // For latitude a delta of 0.001 is about 360 feet
+  // For longitude a delta of 0.001 depends on your latitude. (It is about 360 feet
+  // near the equator & only about 200 feet near northern Canada.)
+  return Math.abs(lat1 - lat2) < 0.001 && Math.abs(long1 - long2) < 0.001;
+}
+
+app.get('/api/fordconnect/vehicles/v1/:vehicleId/chargeSchedules', (req, res) => {
+  if (isTokenExpired(req)) {
+    return sendTokenExpiredJson(req, res);
+  }
+
+  const match = getVehicleOrSendError(req, res);
+  if (match) {
+    if (!match.evdata || (match.info && match.info.engineType !== 'EV')) {
+      return sendUnsupportedVehicle(req, res);
+    }
+
+    const matchLat = parseFloat(match.info.vehicleStatus.vehicleLocation.latitude);
+    const matchLong = parseFloat(match.info.vehicleStatus.vehicleLocation.longitude);
+
+    let nearbySchedule;
+    for (let i = 0; i < match.evdata.chargeSchedules.length; i += 1) {
+      const s = match.evdata.chargeSchedules[i];
+      const sLat = parseFloat(s.latitude);
+      const sLong = parseFloat(s.longitude);
+      if (near(matchLat, matchLong, sLat, sLong)) {
+        nearbySchedule = s;
+      }
+    }
+
+    const response = {
+      status: 'SUCCESS',
+      // TEST: #23 - What is FordConnect API response if we aren't near any chargers?
+      // For now we just return an empty array.
+      chargeSchedules: (nearbySchedule !== undefined) ? nearbySchedule.schedule : [],
+    };
+
+    if (nearbySchedule && response.chargeSchedules) {
+      for (let i = 0; i < response.chargeSchedules.length; i += 1) {
+        response.chargeSchedules[i].desiredChargeLevel = nearbySchedule.desiredChargeLevel;
+      }
+    }
+
+    res.statusCode = 200;
+    return res.json(response);
+  }
+
+  return undefined; // getVehicleOrSendError send response.
+});
 
 // TODO: /departureTimes
 
