@@ -1194,6 +1194,39 @@ app.post('/sim/modem/:vehicleId', (req, res) => {
   return undefined;
 });
 
+// Sets the firmwareUpgradeInProgess on a vehicle.
+//
+// param: warning  (true/false)
+// expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
+//
+// example query: /sim/firmware/22221111111111151111111111112222?upgrade=true
+app.post('/sim/firmware/:vehicleId', (req, res) => {
+  const { upgrade } = req.query;
+  const match = getVehicleOrSendError(req, res);
+
+  if (match) {
+    const setting = toBoolean(upgrade);
+
+    if (setting === undefined) {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'parameter \'upgrade\' must be (true or false).',
+      });
+    }
+
+    match.info.vehicleStatus.firmwareUpgradeInProgress = setting;
+
+    res.statusCode = 200;
+    return res.json({
+      status: 'SUCCESS',
+      msg: `Firmware upgrade in progress set to ${setting} successfully.`,
+    });
+  }
+
+  return undefined;
+});
+
 app.use((req, res) => {
   res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
 });
