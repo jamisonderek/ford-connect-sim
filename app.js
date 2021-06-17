@@ -913,9 +913,8 @@ const DAYS = {
   SUNDAY: 7,
 };
 
-// TODO: #24 - Allow changing simulated day.
 // NOTE: This is a simulated day, not actual day.
-let today = {
+const today = {
   hour: 16,
   minutes: 10,
   dayOfWeek: DAYS.THURSDAY,
