@@ -1065,6 +1065,49 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/images/thumbnail', (req, res) =
   vehicleIdGetImage(req, res, () => 'thumbnail.png');
 });
 
+// Set the simulator's today value (used for determining the next departure time.)
+//
+// param: day  (MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY)
+// param: time (24-hour format, hh:mm, like 13:15 for 1:15PM)
+// expected status: 200 (success), 400 (bad parameter)
+//
+// example query: /sim/today?day=FRIDAY&time=13:15
+app.post('/sim/today', (req, res) => {
+  const { day } = req.query;
+  const { time } = req.query;
+
+  const dayOfWeek = DAYS[day];
+  const t = (time !== undefined) ? time.split(':') : [];
+  const h = (t.length === 2) ? parseInt(t[0], 10) : -1;
+  const m = (t.length === 2) ? parseInt(t[1], 10) : -1;
+
+  if (dayOfWeek === undefined) {
+    res.statusCode = 400;
+    return res.json({
+      status: 'ERROR',
+      msg: 'parameter \'day\' must be (MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY).',
+    });
+  }
+
+  if (h < 0 || h > 23 || m < 0 || m > 59 || (t.length === 2 && t[1].length > 2)) {
+    res.statusCode = 400;
+    return res.json({
+      status: 'ERROR',
+      msg: 'parameter \'time\' must be in 24 hour format (hh:mm).',
+    });
+  }
+
+  today.dayOfWeek = dayOfWeek;
+  today.hour = h;
+  today.minutes = m;
+
+  res.statusCode = 200;
+  return res.json({
+    status: 'SUCCESS',
+    msg: 'Date sent successfully.',
+  });
+});
+
 app.use((req, res) => {
   res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
 });
