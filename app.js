@@ -1393,6 +1393,60 @@ app.post('/sim/fuel/:vehicleId', (req, res) => {
   return undefined;
 });
 
+// Sets the battery level on an EV vehicle.
+//
+// param: level  (0 to 100.0)
+// param: dte (distance to empty, in km.)
+// expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
+//
+// example query: /sim/battery/22221111111111151111111111112222?level=100.0&dte=400.0
+app.post('/sim/battery/:vehicleId', (req, res) => {
+  const { level } = req.query;
+  const { dte } = req.query;
+  const match = getVehicleOrSendError(req, res);
+
+  if (match) {
+    if (!match.info || match.info.engineType !== 'EV') {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'vehicleId is not an EV vehicle.',
+      });
+    }
+
+    const levelSetting = level !== undefined ? parseFloat(level, 10) : undefined;
+    const distanceToEmpty = dte !== undefined ? parseFloat(dte, 10) : undefined;
+
+    if (levelSetting === undefined || Number.isNaN(levelSetting)) {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'parameter \'level\' should be a float (0 to 100).',
+      });
+    }
+
+    if (distanceToEmpty === undefined || Number.isNaN(distanceToEmpty)) {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'parameter \'dte\' should be a float (distance in km)).',
+      });
+    }
+
+    match.info.vehicleDetails.batteryChargeLevel.value = levelSetting;
+    match.info.vehicleDetails.batteryChargeLevel.distanceToEmpty = distanceToEmpty;
+    match.info.vehicleDetails.batteryChargeLevel.timestamp = timestamp.now();
+
+    res.statusCode = 200;
+    return res.json({
+      status: 'SUCCESS',
+      msg: 'Set battery level successfully.',
+    });
+  }
+
+  return undefined;
+});
+
 app.use((req, res) => {
   res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
 });
