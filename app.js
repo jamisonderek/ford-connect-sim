@@ -71,6 +71,22 @@ function makeExtra(full, thumbnail) {
   };
 }
 
+/**
+ * Generates a GUID.  This implementation does not use a secure random generator.
+ *
+ * Modified from https://www.arungudelli.com/tutorial/javascript/how-to-create-uuid-guid-in-javascript-with-examples/
+ * @returns a new GUID.
+ */
+function makeGuid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    // eslint-disable-next-line no-bitwise
+    const r = Math.random() * 16 | 0;
+    // eslint-disable-next-line no-mixed-operators, no-bitwise
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 // Duration that code & access token expire.
 const timeoutInSeconds = parseInt(process.env.FORDSIM_TIMEOUT, 10) || 20 * 60;
 const commandTimeoutInSeconds = parseInt(process.env.FORDSIM_CMDTIMEOUT, 10) || 120;
@@ -134,20 +150,62 @@ const code = process.env.FORDSIM_CODE || `Code${Date.now()}`;
 const codeExpireTimestamp = Date.now() + timeoutInSeconds * 1000;
 console.log(`Code is: ${code}`);
 
-// This token expires after tokenExpireTimestamp. The token will change when refreshed.
-let token = process.env.FORDSIM_TOKEN; // It's okay (preferred) if this value is UNDEFINED.
-let tokenExpireTimestamp = Date.now() + timeoutInSeconds * 1000;
-if (token !== undefined) {
-  console.log(`Token: ${token}`);
+const tokens = [];
+
+/**
+ * Generates a new token and adds it to the token list.
+ * @param {*} tokenKey The key to use (if undefined then auto-generated key will be created.)
+ * @param {*} isRefresh Boolean. true for refresh tokens.
+ */
+function generateToken(tokenKey, isRefresh) {
+  if (tokenKey === undefined || tokenKey.length < 1) {
+    tokenKey = `${isRefresh ? 'REFRESH' : 'ACCESS'}-${makeGuid()}`;
+  }
+  const token = {
+    key: tokenKey,
+    isRefreshToken: !!(isRefresh),
+    expires: Date.now() + (isRefresh ? 90 * 86400 : timeoutInSeconds) * 1000, // 90 days for refresh
+  };
+  tokens.push(token);
+  console.info(`Issued token: ${tokenKey}`);
+  return token;
 }
 
-// The refresh token expires after 90 days (so we don't simulate expiration in the simulator).
-// REVIEW: The refreshToken will change when refreshed (but old refreshTokens can be used).
-// TODO: Should we allow user to simulate a refreshToken expiring?
-//   (How do we know what the FordConnect service will do?)
-let refreshToken;
-if (refreshToken !== undefined) {
-  console.log(`Refresh token is: ${refreshToken}`);
+/**
+ * Check if a value was a token.
+ *
+ * @param {*} tokenKey The key to search for.
+ * @returns Boolean. true if the token was issued.
+ */
+function isToken(tokenKey) {
+  return tokens.filter((t) => t.key === tokenKey
+    && !t.isRefreshToken).length > 0;
+}
+
+/**
+ * Check if a token is still valid.
+ *
+ * @param {*} tokenKey The key to validate against.
+ * @returns Boolean. true is the token is still valid.
+ */
+function isValidToken(tokenKey) {
+  return tokens.filter((t) => t.key === tokenKey
+  && !t.isRefreshToken && Date.now() < t.expires).length !== 0;
+}
+
+/**
+ * Check if a refresh token is still valid.
+ *
+ * @param {*} refreshTokenValue The key to validate against.
+ * @returns Boolean. true is the refresh token is still valid.
+ */
+function isValidRefreshToken(refreshTokenValue) {
+  return tokens.filter((t) => t.key === refreshTokenValue
+  && t.isRefreshToken && Date.now() < t.expires).length !== 0;
+}
+
+if (process.env.FORDSIM_TOKEN) {
+  generateToken(process.env.FORDSIM_TOKEN);
 }
 
 /**
@@ -217,20 +275,17 @@ function getTokenFromRequest(req) {
  */
 function isTokenExpired(req) {
   const reqToken = getTokenFromRequest(req);
-
-  if (reqToken !== token) {
-    // TEST: #13 - How does the FordConnect server work; should we allow all non-expired tokens?
-    //  (or should only allow the most recent token)?
+  if (!isToken(reqToken)) {
     console.error('ERROR: The token does not match the expected value.');
     return true;
   }
 
-  if (Date.now() < tokenExpireTimestamp) {
+  if (isValidToken(reqToken)) {
     // This should be the typical case, since client shouldn't use expired tokens.
     return false;
   }
 
-  console.warn('WARN: The token has expired. Your client  should look at expires_in or expires_on timestamp.');
+  console.warn('WARN: The token has expired. Your client should look at expires_in or expires_on timestamp.');
   return true;
 }
 
@@ -423,40 +478,21 @@ function sendRefreshTokenResponse(req, res) {
 
   console.log('Updating token');
 
-  if (token === undefined) {
-    // TODO: SECURITY: Replace with better token.
-    token = 'eyJ0eXAiOiJKV1QifQ==';
-  }
-  if (token.indexOf('==') < 0) {
-    token += '==';
-  }
-
-  if (refreshToken === undefined) {
-    // TODO: SECURITY: Replace with better token. (current validation has constraints on value.)
-    refreshToken = 'eyJ0eXAiOiJKV1QifQAREFRESH==';
-  }
-  if (refreshToken.indexOf('==') < 0) {
-    refreshToken += '==';
-  }
-
-  token = token.replace('==', 'AAAA==');
-  tokenExpireTimestamp = now + timeoutInSeconds * 1000;
-  console.info(`Issued access token: ${token}`);
-
-  refreshToken = refreshToken.replace('==', 'AAAA==');
+  const token = generateToken();
+  const refreshToken = generateToken(undefined, true);
 
   return res.json({
-    access_token: token,
+    access_token: token.key,
     id_token: 'eyJAAA==', // Stub - we don't use this.
     token_type: 'Bearer',
     not_before: Math.trunc(now / 1000),
     expires_in: timeoutInSeconds,
-    expires_on: Math.trunc(tokenExpireTimestamp / 1000),
+    expires_on: Math.trunc(token.expires / 1000),
     resource: 'c1e4c1a0-2878-4e6f-a308-836b34474ea9',
     id_token_expires_in: timeoutInSeconds,
     profile_info: 'ejyAAA==', // Stub - we don't use this.
     scope: 'https://simulated-environment.onmicrosoft.com/fordconnect/access openid offline_access',
-    refresh_token: refreshToken,
+    refresh_token: refreshToken.key,
     refresh_token_expires_in: 7776000, // 90 days.
   });
 }
@@ -491,22 +527,6 @@ function isValidClientSecret(clientSecretValue) {
 function isValidRedirectUri(redirectUriValue) {
   // TODO: SECURITY: Replace with uri validation rules.
   return redirectUriValue && toLower(redirectUriValue).startsWith('http');
-}
-
-/**
- * Validates the refresh_token parameter is the expected value.
- * @param {*} refreshTokenValue The value to validate.
- * @returns Boolean. Returns true if the parameter was a valid value, otherwise false.
- */
-function isValidRefreshToken(refreshTokenValue) {
-  const refreshTokenPrefix = 'ey';
-  const refreshTokenContains = 'REFRESH';
-
-  // The FordConnect API currently allows replay of refresh_tokens for 90 days.
-  // TODO: SECURITY: Make sure the token matches known token list.
-  return refreshTokenValue
-    && refreshTokenValue.startsWith(refreshTokenPrefix)
-    && refreshTokenValue.indexOf(refreshTokenContains);
 }
 
 /**
@@ -609,14 +629,7 @@ function getCommand(req, commandArray) {
  */
 function createCommand(vehicleId) {
   return {
-    // Modified from https://www.arungudelli.com/tutorial/javascript/how-to-create-uuid-guid-in-javascript-with-examples/
-    commandId: 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      // eslint-disable-next-line no-bitwise
-      const r = Math.random() * 16 | 0;
-      // eslint-disable-next-line no-mixed-operators, no-bitwise
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    }),
+    commandId: makeGuid(),
     vehicleId: toLower(vehicleId),
     timestamp: Date.now(),
     commandStatuses: '4000,PENDINGRESPONSE;-1,COMPLETED',
