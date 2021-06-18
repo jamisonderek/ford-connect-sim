@@ -110,27 +110,27 @@ NOTE: At some point you will want to swtich back to using the FordConnect API, y
 
 |percent complete|verb|route|Postman Name|
 |----------------|----|-----|------------|
-90%|POST|/oauth2/v2.0/token (grant_type=authorization_code)|Ford Get Token
-90%|POST|/oauth2/v2.0/token (grant_type=refresh_token)|Ford Get Refresh Token
-90%|GET|api/fordconnect/vehicles/v1||Get Vehicle List
-70%|POST|api/fordconnect/vehicles/v1/:vehicleId/unlock|Unlock Vehicle
-70%|GET|api/fordconnect/vehicles/v1/:vehicleId/unlock/:unlockCommandId|Unlock Command Status
-70%|POST|api/fordconnect/vehicles/v1/:vehicleId/lock|Lock Vehicle
-70%|GET|api/fordconnect/vehicles/v1/:vehicleId/lock/:lockCommandId|Lock Command Status
+done|POST|/oauth2/v2.0/token (grant_type=authorization_code)|Ford Get Token
+done|POST|/oauth2/v2.0/token (grant_type=refresh_token)|Ford Get Refresh Token
+done|GET|api/fordconnect/vehicles/v1||Get Vehicle List
+done|POST|api/fordconnect/vehicles/v1/:vehicleId/unlock|Unlock Vehicle
+done|GET|api/fordconnect/vehicles/v1/:vehicleId/unlock/:unlockCommandId|Unlock Command Status
+done|POST|api/fordconnect/vehicles/v1/:vehicleId/lock|Lock Vehicle
+done|GET|api/fordconnect/vehicles/v1/:vehicleId/lock/:lockCommandId|Lock Command Status
 70%|POST|api/fordconnect/vehicles/v1/:vehicleId/startEngine|Start Engine
 70%|GET|api/fordconnect/vehicles/v1/:vehicleId/startEngine/:startCommandId|Start Command Status
 70%|POST|api/fordconnect/vehicles/v1/:vehicleId/stopEngine|Stop Engine
 70%|GET|api/fordconnect/vehicles/v1/:vehicleId/stopEngine/:stopCommandId|Start Command Status
-80%|POST|api/fordconnect/vehicles/v1/:vehicleId/wake|Wake 
-80%|GET|api/fordconnect/vehicles/v1/:vehicleId/?????/:wakeCommandId|Wake Command Status
-30%|POST|api/fordconnect/vehicles/v1/:vehicleId/startCharge|Start Charge
-30%|POST|api/fordconnect/vehicles/v1/:vehicleId/stopCharge|Stop Charge
-<font color=#FF0>N/A</font>|GET|api/fordconnect/vehicles/v1/:vehicleId/chargeSchedules|Get charge schedule
-<font color=#FF0>N/A</font>|GET|api/fordconnect/vehicles/v1/:vehicleId/departureTimes|Get departure times
-90%|POST|api/fordconnect/vehicles/v1/:vehicleId/status|Vehicle Status
-80%|GET|api/fordconnect/vehicles/v1/:vehicleId|Vehicle Information
-70%|POST|api/fordconnect/vehicles/v1/:vehicleId/location|Vehicle Location
-90%|GET|api/fordconnect/vehicles/v1/:vehicleId/location|Vehicle Location
+done|POST|api/fordconnect/vehicles/v1/:vehicleId/wake|Wake 
+50%|POST|api/fordconnect/vehicles/v1/:vehicleId/startCharge|Start Charge
+50%|POST|api/fordconnect/vehicles/v1/:vehicleId/stopCharge|Stop Charge
+done|GET|api/fordconnect/vehicles/v1/:vehicleId/chargeSchedules|Get charge schedule
+done|GET|api/fordconnect/vehicles/v1/:vehicleId/departureTimes|Get departure times
+done|POST|api/fordconnect/vehicles/v1/:vehicleId/status|Vehicle Status
+done|GET|api/fordconnect/vehicles/v1/:vehicleId/statusrefresh|Vehicle Status
+done|GET|api/fordconnect/vehicles/v1/:vehicleId|Vehicle Information
+done|POST|api/fordconnect/vehicles/v1/:vehicleId/location|Vehicle Location
+done|GET|api/fordconnect/vehicles/v1/:vehicleId/location|Vehicle Location
 50%|GET|api/fordconnect/vehicles/v1/:vehicleId/images/thumbnail|Get Vehicle Image Thumbnail
 50%|GET|api/fordconnect/vehicles/v1/:vehicleId/images/full|Get image Full
 
