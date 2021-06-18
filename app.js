@@ -29,7 +29,8 @@
  *   FORDSIM_HTTPPORT = 80     (The HTTP port that the service will listen on.  Default = 80)
  *   FORDSIM_CODE = SomeCode   (Any special access code. Default = auto-generated code.)
  *   FORDSIM_TOKEN = SomeToken (Any special access token.  Default = auto-generated token.)
- *   FORDSIM_TIMEOUT = 1200  (Number of seconds before code + access token exppire. Default = 1200)
+ *   FORDSIM_TIMEOUT = 1200  (Number of seconds before code + access token expire. Default = 1200)
+ *   FORDSIM_CMDTIMEOUT = 120 (Number of seconds before commandId values expire. Default = 120)
  *
  * If you have a new mock vehicle, update vehicles.js with an additional export.
  *
@@ -75,6 +76,9 @@ function makeExtra(vehicleInfo) {
 
 // Duration that code & access token expire.
 const timeoutInSeconds = parseInt(process.env.FORDSIM_TIMEOUT, 10) || 20 * 60;
+const commandTimeoutInSeconds = parseInt(process.env.FORDSIM_CMDTIMEOUT, 10) || 120;
+console.log(`timeout for code and access tokens set to ${timeoutInSeconds} seconds.`);
+console.log(`timeout for commandIds set to ${commandTimeoutInSeconds} seconds.`);
 
 // REVIEW: Should we refactor this code into vehicles.js?
 const vehicles = [];
@@ -591,6 +595,10 @@ function getCommand(req, commandArray) {
     if (matches && matches.length > 0) {
       // eslint-disable-next-line prefer-destructuring
       match = matches[0];
+      if (Date.now() - match.timestamp > commandTimeoutInSeconds * 1000) {
+        console.log('command expired.');
+        match = undefined;
+      }
     }
   });
 
