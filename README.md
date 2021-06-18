@@ -137,17 +137,25 @@ done|GET|api/fordconnect/vehicles/v1/:vehicleId/location|Vehicle Location
 50%|GET|api/fordconnect/vehicles/v1/:vehicleId/images/full|Get image Full
 
 ## Exposing your simulator on the Internet
-If your application cannot access your local development environment, you make need to use ngrok.com to expose it on the internet.
-
-**TODO: Document the steps for using ngrok.com to expose the service online.**
+You can expose your simulator from your local development environment onto the internet using ngrok.  To use ngrok, simply follow the directions at https://dashboard.ngrok.com/get-started/setup.  IF you don't already have an account, click "Sign up for free" at the bottom of the login page.  After you signup, you many need to reload the above url.
+The steps are basically:
+1. Download ngrok and extract it from the zip file.
+1. Associate your authtoken (displayed in step 2 of the dashboard directions.)
+   ```
+   ngrok authtoken your-token-goes-here
+   ```
+1. Start ngrok listening on your port (like 80)
+   ```
+   Run *ngrok http 80*
+   ```
+1. Start sending requests to your forwarding address.  For example https://f4460d6eed92.ngrok.io/api/fordconnect/vehicles/v1.
+1. You can also open the Web Interface to see the requests and more details.  For example http://127.0.0.1:4040 which allows you to click on a request and see the data (sent/received) and even replay the request while modifying some of the data.  
 
 ## Known issues
 The following issues will be addressed in a future update.
 1. A full test pass has not happened yet, since the simulator is under development.
 1. The app.js file has lots of "TEST:", "REVIEW:" and "TODO:" comments, which still need to be addressed.
 1. During error paths the simulator doesn't correctly response to all APIs correctly. For example you may get a HTTP 401 instead of an HTTP 406 status code.
-1. The simulator doesn't currently support changing the data (like moving vehicle, changing fuel levels, etc.)
-1. The simulator doesn't currently support EV vehicles.
 
 Please report any additional issues at the [github issues](https://github.com/jamisonderek/ford-connect-sim/issues) page.
 
