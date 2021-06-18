@@ -1304,6 +1304,41 @@ app.post('/sim/plug/:vehicleId', (req, res) => {
   return undefined;
 });
 
+// Sets the ignition status on the vehicle.
+//
+// param: value  (on/off)
+// expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
+//
+// example query: /sim/ignition/22221111111111151111111111112222?value=on
+app.post('/sim/ignition/:vehicleId', (req, res) => {
+  const { value } = req.query;
+  const match = getVehicleOrSendError(req, res);
+
+  if (match) {
+    const setting = toBoolean(value);
+
+    if (setting === undefined) {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'parameter \'value\' must be (on or off).',
+      });
+    }
+
+    match.info.vehicleStatus.ignitionStatus.value = setting ? 'ON' : 'OFF';
+    match.info.vehicleStatus.ignitionStatus.timeStamp = timestamp.now();
+    // TODO: #27 - Should remote start status change if it was ENGINE_RUNNING?
+
+    res.statusCode = 200;
+    return res.json({
+      status: 'SUCCESS',
+      msg: `Ingition status set to ${match.info.vehicleStatus.ignitionStatus.value} successfully.`,
+    });
+  }
+
+  return undefined;
+});
+
 app.use((req, res) => {
   res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
 });
