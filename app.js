@@ -36,7 +36,8 @@
  *
  */
 
-// Contributors to the simulator, please search for "TEST:", "REVIEW:" and "TODO:" comments.
+// Contributors to the simulator, please search for "TEST:", "REVIEW:", "TODO:" and "SECURITY:"
+// comments & also look at issues at https://github.com/jamisonderek/ford-connect-sim/issues.
 
 const express = require('express');
 const http = require('http');
@@ -137,7 +138,6 @@ const commands = {
 const httpPort = parseInt(process.env.FORDSIM_HTTPPORT, 10) || 80;
 console.log(`Listening on port ${httpPort}`);
 
-// TODO: Add HTTPS support.  For now we just have HTTP support on the httpPort.
 const httpServer = http.createServer(app);
 httpServer.listen(httpPort);
 
@@ -145,8 +145,7 @@ httpServer.listen(httpPort);
 app.use(formidable());
 
 // The code is only good until the codeExpireTimestamp.
-// TODO: Use a random code instead of pseudo-predictable value.
-const code = process.env.FORDSIM_CODE || `Code${Date.now()}`;
+const code = process.env.FORDSIM_CODE || `Code${makeGuid()}`;
 const codeExpireTimestamp = Date.now() + timeoutInSeconds * 1000;
 console.log(`Code is: ${code}`);
 
@@ -401,10 +400,8 @@ function sendNotFound(req, res) {
   } else {
     // eslint-disable-next-line no-lonely-if
     if (req.originalUrl.indexOf('/chargeSchedules') > 0) {
-      // TEST: Do null values get returned in our JSON response?
       response.chargeSchedules = null;
     } else if (req.originalUrl.indexOf('/departureTimes') > 0) {
-      // TEST: Do null values get returned in our JSON response?
       response.departureTimes = null;
     } else if (
       (req.originalUrl.indexOf('/unlock') > 0)
@@ -503,7 +500,7 @@ function sendRefreshTokenResponse(req, res) {
  * @returns Boolean. Returns true if the parameter was a valid value, otherwise false.
  */
 function isValidClientId(clientIdValue) {
-  // TODO: SECURITY: Replace with stronger client id.  :)
+  // SECURITY: Replace with stronger client id.  :)
   const clientIdPrefix = '3';
   return clientIdValue && clientIdValue.startsWith(clientIdPrefix);
 }
@@ -514,7 +511,7 @@ function isValidClientId(clientIdValue) {
  * @returns Boolean. Returns true if the parameter was a valid value, otherwise false.
  */
 function isValidClientSecret(clientSecretValue) {
-  // TODO: SECURITY: Replace with stronger client secret.  :)
+  // SECURITY: Replace with stronger client secret.  :)
   const clientSecretPrefix = 'T';
   return clientSecretValue && clientSecretValue.startsWith(clientSecretPrefix);
 }
@@ -525,7 +522,7 @@ function isValidClientSecret(clientSecretValue) {
  * @returns Boolean. Returns true if the parameter was a valid value, otherwise false.
  */
 function isValidRedirectUri(redirectUriValue) {
-  // TODO: SECURITY: Replace with uri validation rules.
+  // SECURITY: Replace with uri validation rules.
   return redirectUriValue && toLower(redirectUriValue).startsWith('http');
 }
 
@@ -605,7 +602,6 @@ function getCommand(req, commandArray) {
   let match;
   Object.keys(searchLists).forEach((searchList) => {
     const matches = searchLists[searchList].filter(
-      // TEST: #15 - Is there a timeout on how long a command is valid for?
       (c) => c.commandId === commandId && c.vehicleId === vehicleId,
     );
 
@@ -851,11 +847,11 @@ app.post('/api/fordconnect/vehicles/v1/:vehicleId/stopEngine', (req, res) => {
     commands.stopEngine.push(command);
     match.extra.lastStarted = Date.now();
     match.info.vehicleStatus.remoteStartStatus = {
-      status: 'ENGINE_STOPPED', // REVIEW: #17 - Based on SPEC.
+      status: 'ENGINE_STOPPED',
       duration: 0, // #10 - TODO: Does this need to change over time (minutes)?
       timeStamp: timestamp.now(),
     };
-    match.info.vehicleStatus.ignitionStatus.value = 'OFF'; // REVIEW: Based on SPEC.
+    match.info.vehicleStatus.ignitionStatus.value = 'OFF';
   });
 });
 
@@ -1084,7 +1080,6 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId', (req, res) => {
 app.post('/api/fordconnect/vehicles/v1/:vehicleId/location', (req, res) => {
   vehicleIdPostMethod(req, res, false, (_req, _res, match, command) => {
     commands.location.push(command);
-    // TODO: Update location info.
   });
 });
 
