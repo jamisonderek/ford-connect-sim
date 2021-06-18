@@ -62,6 +62,7 @@ function makeExtra(vehicleInfo) {
   // TODO: We could set Started/Stopped based on vehicleInfo?
   return {
     doorsLocked: true,
+    doorsLockedTimestamp: timestamp.now(),
     lastStarted: 0, // These are Date.now() values.
     lastStopped: 0,
     lastWake: 0,
@@ -730,14 +731,14 @@ function vehicleIdGetCommandStatus(req, res, commandArray, fn) {
       }
     }
 
-    // Invoke the callback function, with the matching vehicle and command object.
-    fn(req, res, match, command);
-
     const response = {
       status: 'SUCCESS',
       commandStatus: command.commandStatus,
       commandId: command.commandId,
     };
+
+    // Invoke the callback function, with the matching vehicle and command object.
+    fn(req, res, match, command, response);
 
     res.statusCode = 200;
     return res.json(response);
@@ -788,6 +789,7 @@ app.post('/api/fordconnect/vehicles/v1/:vehicleId/unlock', (req, res) => {
   vehicleIdPostMethod(req, res, false, (_req, _res, match, command) => {
     commands.unlock.push(command);
     match.extra.doorsLocked = false;
+    match.extra.doorsLockedTimestamp = timestamp.now();
   });
 });
 
@@ -799,6 +801,7 @@ app.post('/api/fordconnect/vehicles/v1/:vehicleId/lock', (req, res) => {
   vehicleIdPostMethod(req, res, false, (_req, _res, match, command) => {
     commands.lock.push(command);
     match.extra.doorsLocked = true;
+    match.extra.doorsLockedTimestamp = timestamp.now();
   });
 });
 
@@ -1014,7 +1017,24 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/departureTimes', (req, res) => 
 app.post('/api/fordconnect/vehicles/v1/:vehicleId/status', (req, res) => {
   vehicleIdPostMethod(req, res, false, (_req, _res, match, command) => {
     commands.status.push(command);
-    // TODO: Update some timestamps + location info?
+  });
+});
+
+app.get('/api/fordconnect/vehicles/v1/:vehicleId/statusrefresh/:commandId', (req, res) => {
+  vehicleIdGetCommandStatus(req, res, commands.status, (_, __, match, command, response) => {
+    if (command.commandStatus === 'COMPLETED') {
+      response.vehicleStatus = {
+        lockStatus: {
+          value: match.extra.doorsLocked ? 'LOCKED' : 'UNLOCKED',
+          timestamp: match.extra.doorsLockedTimestamp,
+        },
+        // TODO: #29 - Add dynamic alarm values.
+        alarm: {
+          value: 'NOTSET',
+          timestamp: timestamp.now(),
+        },
+      };
+    }
   });
 });
 
