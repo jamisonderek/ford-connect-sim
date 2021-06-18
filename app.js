@@ -1117,9 +1117,9 @@ function toBoolean(value) {
   let bool;
   if (value !== undefined) {
     value = value.toLowerCase();
-    if (value === 'false' || value === 'no') {
+    if (value === 'false' || value === 'no' || value === 'off') {
       bool = false;
-    } else if (value === 'true' || value === 'yes') {
+    } else if (value === 'true' || value === 'yes' || value === 'on') {
       bool = true;
     }
   }
@@ -1221,7 +1221,7 @@ app.post('/sim/deepsleep/:vehicleId', (req, res) => {
     res.statusCode = 200;
     return res.json({
       status: 'SUCCESS',
-      msg: `Modem enabled set to ${setting} successfully.`,
+      msg: `Deep sleep enabled set to ${setting} successfully.`,
     });
   }
 
