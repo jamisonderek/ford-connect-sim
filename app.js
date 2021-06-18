@@ -29,7 +29,7 @@
  *   FORDSIM_HTTPPORT = 80     (The HTTP port that the service will listen on.  Default = 80)
  *   FORDSIM_CODE = SomeCode   (Any special access code. Default = auto-generated code.)
  *   FORDSIM_TOKEN = SomeToken (Any special access token.  Default = auto-generated token.)
- *
+ *   FORDSIM_TIMEOUT = 1200  (Number of seconds before code + access token exppire. Default = 1200)
  *
  * If you have a new mock vehicle, update vehicles.js with an additional export.
  *
@@ -70,8 +70,8 @@ function makeExtra(vehicleInfo) {
   };
 }
 
-// TODO: Make this an environment variable & rename it to timeoutDurationInSeconds or something.
-const twentyMinsInSeconds = 20 * 60;
+// Duration that code & access token expire.
+const timeoutInSeconds = parseInt(process.env.FORDSIM_TIMEOUT, 10) || 20 * 60;
 
 // REVIEW: Should we refactor this code into vehicles.js?
 const vehicles = [];
@@ -127,12 +127,12 @@ app.use(formidable());
 // The code is only good until the codeExpireTimestamp.
 // TODO: Use a random code instead of pseudo-predictable value.
 const code = process.env.FORDSIM_CODE || `Code${Date.now()}`;
-const codeExpireTimestamp = Date.now() + twentyMinsInSeconds * 1000;
+const codeExpireTimestamp = Date.now() + timeoutInSeconds * 1000;
 console.log(`Code is: ${code}`);
 
 // This token expires after tokenExpireTimestamp. The token will change when refreshed.
 let token = process.env.FORDSIM_TOKEN; // It's okay (preferred) if this value is UNDEFINED.
-let tokenExpireTimestamp = Date.now() + twentyMinsInSeconds * 1000;
+let tokenExpireTimestamp = Date.now() + timeoutInSeconds * 1000;
 if (token !== undefined) {
   console.log(`Token: ${token}`);
 }
@@ -436,7 +436,7 @@ function sendRefreshTokenResponse(req, res) {
   }
 
   token = token.replace('==', 'AAAA==');
-  tokenExpireTimestamp = now + twentyMinsInSeconds * 1000;
+  tokenExpireTimestamp = now + timeoutInSeconds * 1000;
   console.info(`Issued access token: ${token}`);
 
   refreshToken = refreshToken.replace('==', 'AAAA==');
@@ -446,10 +446,10 @@ function sendRefreshTokenResponse(req, res) {
     id_token: 'eyJAAA==', // Stub - we don't use this.
     token_type: 'Bearer',
     not_before: Math.trunc(now / 1000),
-    expires_in: twentyMinsInSeconds,
+    expires_in: timeoutInSeconds,
     expires_on: Math.trunc(tokenExpireTimestamp / 1000),
     resource: 'c1e4c1a0-2878-4e6f-a308-836b34474ea9',
-    id_token_expires_in: twentyMinsInSeconds,
+    id_token_expires_in: timeoutInSeconds,
     profile_info: 'ejyAAA==', // Stub - we don't use this.
     scope: 'https://simulated-environment.onmicrosoft.com/fordconnect/access openid offline_access',
     refresh_token: refreshToken,

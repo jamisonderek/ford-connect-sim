@@ -58,6 +58,7 @@ When the simulator starts, it will look for the following optional environment v
 FORDSIM_HTTPPORT|80|80|The HTTP port that the service will listen on.
 FORDSIM_CODE|SomeCode|auto-generated|The code needed for the initial call to the oauth2 service. You can enter any special access code.  The code will be good for 20 minutes. This value will be displayed when the server starts. 
 FORDSIM_TOKEN|SomeToken|auto-generated|The code needed for invoking APIs. Typically it is preferred that the caller use the oauth2 route to retrieve the token, but for initial testing this value may be used. This will be displayed when the server starts if it was set by the user. 
+FORDSIM_TIMEOUT|300|1200|Number of seconds before code + access token exppire.  Reducing this value is useful for testing your application's ability to refresh the token.  Generally, you should also update your application to have the same thresholds (so you are auto-refreshing the token instead of getting a access token expired message).
 
 ## Known differences between the simulator the FordConnect API
 Error descriptions/messages are not idential to real server, but status codes should match.  See [Known issues](#known-issues).
