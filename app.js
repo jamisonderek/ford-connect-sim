@@ -1127,6 +1127,23 @@ function toBoolean(value) {
   return bool;
 }
 
+/**
+ * Parses a query parameter into a float value.
+ *
+ * @param {*} value A query parameter to convert to float.
+ * @returns float or undefined.
+ */
+function toFloat(value) {
+  if (value !== undefined) {
+    value = parseFloat(value);
+    if (Number.isNaN(value)) {
+      value = undefined;
+    }
+  }
+
+  return value;
+}
+
 // Sets the tirePressureWarning on a vehicle.
 //
 // param: warning  (true/false)
@@ -1360,10 +1377,10 @@ app.post('/sim/fuel/:vehicleId', (req, res) => {
       });
     }
 
-    const levelSetting = level !== undefined ? parseFloat(level, 10) : undefined;
-    const distanceToEmpty = dte !== undefined ? parseFloat(dte, 10) : undefined;
+    const levelSetting = toFloat(level);
+    const distanceToEmpty = toFloat(dte);
 
-    if (levelSetting === undefined || Number.isNaN(levelSetting)) {
+    if (levelSetting === undefined) {
       res.statusCode = 400;
       return res.json({
         status: 'ERROR',
@@ -1371,7 +1388,7 @@ app.post('/sim/fuel/:vehicleId', (req, res) => {
       });
     }
 
-    if (distanceToEmpty === undefined || Number.isNaN(distanceToEmpty)) {
+    if (distanceToEmpty === undefined) {
       res.statusCode = 400;
       return res.json({
         status: 'ERROR',
@@ -1414,10 +1431,10 @@ app.post('/sim/battery/:vehicleId', (req, res) => {
       });
     }
 
-    const levelSetting = level !== undefined ? parseFloat(level, 10) : undefined;
-    const distanceToEmpty = dte !== undefined ? parseFloat(dte, 10) : undefined;
+    const levelSetting = toFloat(level);
+    const distanceToEmpty = toFloat(dte);
 
-    if (levelSetting === undefined || Number.isNaN(levelSetting)) {
+    if (levelSetting === undefined) {
       res.statusCode = 400;
       return res.json({
         status: 'ERROR',
@@ -1425,7 +1442,7 @@ app.post('/sim/battery/:vehicleId', (req, res) => {
       });
     }
 
-    if (distanceToEmpty === undefined || Number.isNaN(distanceToEmpty)) {
+    if (distanceToEmpty === undefined) {
       res.statusCode = 400;
       return res.json({
         status: 'ERROR',
