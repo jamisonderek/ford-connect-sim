@@ -208,7 +208,7 @@ exports.ev1_info = {
         timeStamp: timestamp.now(),
       },
       {
-        vehicleDoor: 'REAR_CARGO', // REVIEW: This may not be the correct value.
+        vehicleDoor: 'TAILGATE',
         value: 'CLOSED',
         vehicleOccupantRole: 'NOT_APPLICABLE', // REVIEW: This may not be the correct value.
         timeStamp: timestamp.now(),

@@ -147,6 +147,22 @@ if (refreshToken !== undefined) {
 }
 
 /**
+ * Coverts to lowerCase, removing dotless i.
+ *
+ * @param {*} value A value to convert to lowercase.
+ * @returns lowercased string.
+ */
+function toLower(value) {
+  if (value !== undefined) {
+    value = value.toLowerCase();
+    // Convert dotless i to dotted i.
+    value = value.replace('\u0131', 'i');
+  }
+
+  return value;
+}
+
+/**
  * Returns user controlled data for use in a JSON response.  In general, returning user controlled
  * data in your response is a bad idea from security perspective.  Always use this method when
  * returning user controlled data, so that the security review is easier.
@@ -470,7 +486,7 @@ function isValidClientSecret(clientSecretValue) {
  */
 function isValidRedirectUri(redirectUriValue) {
   // TODO: SECURITY: Replace with uri validation rules.
-  return redirectUriValue && redirectUriValue.toLowerCase().startsWith('http');
+  return redirectUriValue && toLower(redirectUriValue).startsWith('http');
 }
 
 /**
@@ -499,7 +515,7 @@ function isValidMake(makeValue) {
     return false;
   }
 
-  makeValue = makeValue.toLowerCase();
+  makeValue = toLower(makeValue);
   return makeValue === 'f' || makeValue === 'ford' || makeValue === 'l' || makeValue === 'lincoln';
 }
 
@@ -554,8 +570,8 @@ function getVehicleOrSendError(req, res) {
 function getCommand(req, commandArray) {
   let { commandId } = req.params;
   let { vehicleId } = req.params;
-  commandId = commandId.toLowerCase(); // FordConnect server is case-insensitive.
-  vehicleId = vehicleId.toLowerCase();
+  commandId = toLower(commandId); // FordConnect server is case-insensitive.
+  vehicleId = toLower(vehicleId);
 
   let searchLists = (commandArray !== undefined) ? { data: commandArray } : commands;
 
@@ -593,7 +609,7 @@ function createCommand(vehicleId) {
       const v = c === 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
     }),
-    vehicleId: vehicleId.toLowerCase(),
+    vehicleId: toLower(vehicleId),
     timestamp: Date.now(),
     commandStatuses: '4000,PENDINGRESPONSE;-1,COMPLETED',
     commandStatus: 'PENDINGRESPONSE', // possible values: PENDINGRESPONSE, COMPLETED, FAILED
@@ -1116,7 +1132,7 @@ app.post('/sim/today', (req, res) => {
 function toBoolean(value) {
   let bool;
   if (value !== undefined) {
-    value = value.toLowerCase();
+    value = toLower(value);
     if (value === 'false' || value === 'no' || value === 'off') {
       bool = false;
     } else if (value === 'true' || value === 'yes' || value === 'on') {
@@ -1136,7 +1152,7 @@ function toBoolean(value) {
 function toDirection(value) {
   let dir;
   if (value !== undefined) {
-    value = value.toLowerCase();
+    value = toLower(value);
     if (value === 'north') {
       dir = 'North';
     } else if (value === 'south') {
@@ -1157,6 +1173,80 @@ function toDirection(value) {
   }
 
   return dir;
+}
+
+/**
+ * Parses a query parameter into a door value.
+ *
+ * @param {*} value A query parameter to convert to a door.
+ * @returns String or undefined. parsed value (HOOD_DOOR, TAILGATE, etc.)
+ */
+function toDoor(value) {
+  let doorValue;
+  if (value) {
+    value = toLower(value);
+    if (value.indexOf('front') >= 0) {
+      doorValue = 'UNSPECIFIED_FRONT';
+    } else if (value.indexOf('hood') >= 0) {
+      doorValue = 'HOOD_DOOR';
+    } else if (value.indexOf('tailgate') >= 0) {
+      if (value.indexOf('inner') >= 0) {
+        doorValue = 'INNER_TAILGATE';
+      } else if (value === 'tailgate') {
+        doorValue = 'TAILGATE';
+      }
+    } else if (value.indexOf('rear') >= 0) {
+      if (value.indexOf('left') >= 0) {
+        doorValue = 'REAR_LEFT';
+      } else if (value.indexOf('right') >= 0) {
+        doorValue = 'REAR_RIGHT';
+      }
+    }
+  }
+
+  return doorValue;
+}
+
+/**
+ * Parses a query parameter into a state (open/closed) value.
+ *
+ * @param {*} value A query parameter to convert to a state.
+ * @returns String or undefined. parsed value (OPEN, CLOSED.)
+ */
+function toState(value) {
+  let state;
+  if (value) {
+    value = toLower(value);
+    if (value === 'open') {
+      state = 'OPEN';
+    } else if (value === 'closed') {
+      state = 'CLOSED';
+    }
+  }
+
+  return state;
+}
+
+/**
+ * Parses a query parameter into a role (DRIVER, PASSENGER, NOT_APPLICABLE) value.
+ *
+ * @param {*} value A query parameter to convert to a role.
+ * @returns String or undefined. parsed value (DRIVER, PASSENGER, NOT_APPLICABLE)
+ */
+function toRole(value) {
+  let role;
+  if (value) {
+    value = toLower(value);
+    if (value === 'driver') {
+      role = 'DRIVER';
+    } else if (value === 'passenger') {
+      role = 'PASSENGER';
+    } else if (value.startsWith('n')) {
+      role = 'NOT_APPLICABLE';
+    }
+  }
+
+  return role;
 }
 
 /**
@@ -1573,6 +1663,85 @@ app.post('/sim/location/:vehicleId', (req, res) => {
     return res.json({
       status: 'SUCCESS',
       msg: 'Set location successfully.',
+    });
+  }
+
+  return undefined;
+});
+
+// Opens or closes a door on the vehicle.
+//
+// param: door  (HOOD_DOOR, REAR_LEFT, etc.)
+// param: state (OPEN, CLOSED)
+// param: role  (optional, if door is unique. DRIVER, PASSENGER, NOT_APPLICABLE)
+// expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
+//
+// example query:
+//  /sim/door/22221111111111151111111111112222?door=UNSPECIFIED_FRONT&role=DRIVER&state=OPEN
+app.post('/sim/door/:vehicleId', (req, res) => {
+  let { door } = req.query;
+  let { state } = req.query;
+  const { role } = req.query;
+  const match = getVehicleOrSendError(req, res);
+
+  if (match) {
+    door = toDoor(door);
+
+    if (door === undefined) {
+      res.statusCode = 400;
+      const validValues = 'UNSPECIFIED_FRONT,HOOD_DOOR,REAR_LEFT,REAR_RIGHT,TAILGATE,INNER_TAILGATE';
+      return res.json({
+        status: 'ERROR',
+        msg: `optional parameter 'door' should be (${validValues}).`,
+      });
+    }
+
+    state = toState(state);
+    if (state === undefined) {
+      res.statusCode = 400;
+      const validValues = 'OPEN, CLOSED';
+      return res.json({
+        status: 'ERROR',
+        msg: `optional parameter 'state' should be (${validValues}).`,
+      });
+    }
+
+    const occupantRole = toRole(role);
+    if (occupantRole === undefined && role && role.length > 0) {
+      res.statusCode = 400;
+      const validValues = 'DRIVER,PASSENGER,NOT_APPLICABLE';
+      return res.json({
+        status: 'ERROR',
+        msg: `optional parameter 'role' should be (${validValues}).`,
+      });
+    }
+
+    const doors = match.info.vehicleStatus.doorStatus.filter((d) => d.vehicleDoor === door
+      && (!occupantRole || d.vehicleOccupantRole === occupantRole));
+
+    if (!doors || doors.length === 0) {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'could not find door matching the requested parameter combination.',
+      });
+    }
+
+    if (!doors || doors.length > 1) {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'multiple doors matched parameters, please include \'role\' parameter.',
+      });
+    }
+
+    doors[0].value = state;
+    doors[0].timeStamp = timestamp.now();
+
+    res.statusCode = 200;
+    return res.json({
+      status: 'SUCCESS',
+      msg: `Door state changed to ${state} successfully.`,
     });
   }
 
