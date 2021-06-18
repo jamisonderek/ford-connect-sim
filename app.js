@@ -1128,6 +1128,38 @@ function toBoolean(value) {
 }
 
 /**
+ * Parses a query parameter into a direction value.
+ *
+ * @param {*} value A query parameter to convert to a direction.
+ * @returns String or undefined. parsed value (North, South, etc.)
+ */
+function toDirection(value) {
+  let dir;
+  if (value !== undefined) {
+    value = value.toLowerCase();
+    if (value === 'north') {
+      dir = 'North';
+    } else if (value === 'south') {
+      dir = 'South';
+    } else if (value === 'east') {
+      dir = 'East';
+    } else if (value === 'west') {
+      dir = 'West';
+    } else if (value === 'northwest') {
+      dir = 'NorthWest';
+    } else if (value === 'northeast') {
+      dir = 'NorthEast';
+    } else if (value === 'southwest') {
+      dir = 'SouthWest';
+    } else if (value === 'southeast') {
+      dir = 'SouthEast';
+    }
+  }
+
+  return dir;
+}
+
+/**
  * Parses a query parameter into a float value.
  *
  * @param {*} value A query parameter to convert to float.
@@ -1458,6 +1490,89 @@ app.post('/sim/battery/:vehicleId', (req, res) => {
     return res.json({
       status: 'SUCCESS',
       msg: 'Set battery level successfully.',
+    });
+  }
+
+  return undefined;
+});
+
+// Sets the location of a vehicle.
+//
+// param: lat   (-90.0 to 90.0)
+// param: long  (-180.0 to 180.0)
+// param: distance (float, miles to add to mileage/odometer. can be 0.0)
+// param: speed  (optional, float)
+// param: direction (optional: north, south, east, west, northwest, northeast, southwest, southeast)
+// expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
+//
+// example query:
+//  /sim/location/22221111111111151111111111112222?lat=36.105539&long=-95.885703100.0&distance=3.1
+app.post('/sim/location/:vehicleId', (req, res) => {
+  const { lat } = req.query;
+  const { long } = req.query;
+  const { distance } = req.query;
+  const { speed } = req.query;
+  const { direction } = req.query;
+  const match = getVehicleOrSendError(req, res);
+
+  if (match) {
+    const latitude = toFloat(lat);
+    const longitude = toFloat(long);
+    const distanceInMiles = toFloat(distance);
+    const updatedSpeed = toFloat(speed);
+    const dir = toDirection(direction);
+
+    if (latitude === undefined || latitude < -90.0 || latitude > 90.0) {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'parameter \'lat\' should be a float (-90.0 to 90.0).',
+      });
+    }
+
+    if (longitude === undefined || longitude < -180.0 || longitude > 180.0) {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'parameter \'long\' should be a float (-180.0 to 180.0).',
+      });
+    }
+
+    if (distanceInMiles === undefined || distance < 0.0) {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'parameter \'distance\' should be a positve float (can be 0.0).',
+      });
+    }
+
+    if (dir === undefined && direction && direction.length > 0) {
+      res.statusCode = 400;
+      const validValues = 'North, South, East, West, NorthWest, NorthEast, SouthWest, SouthEast';
+      return res.json({
+        status: 'ERROR',
+        msg: `optional parameter 'direction' should be (${validValues}).`,
+      });
+    }
+
+    match.info.vehicleStatus.vehicleLocation.latitude = latitude;
+    match.info.vehicleStatus.vehicleLocation.longitude = longitude;
+    match.info.vehicleStatus.vehicleLocation.timeStamp = timestamp.now();
+    match.info.vehicleDetails.mileage += distanceInMiles;
+    match.info.vehicleDetails.odometer += (distanceInMiles * 1.609344);
+
+    if (updatedSpeed !== undefined) {
+      match.info.vehicleStatus.vehicleLocation.speed = updatedSpeed;
+    }
+
+    if (dir !== undefined) {
+      match.info.vehicleStatus.vehicleLocation.direction = dir;
+    }
+
+    res.statusCode = 200;
+    return res.json({
+      status: 'SUCCESS',
+      msg: 'Set location successfully.',
     });
   }
 
