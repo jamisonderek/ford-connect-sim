@@ -80,12 +80,12 @@ as used in the previous step.)
    1. Make sure the EngineType is set to 'ICE'.
    1. Make sure the ChargingStatus.value is set to 'EvseNotDetected'.
    1. Make sure the PlugStatus.value is set to false.
-1. Add the following code to app.js after the existing vehicles.push commands. (replace # with the same value as used in previous steps.)
+1. Add the following code to app.js after the existing vehicles.push commands. (replace # with the same value as used in previous steps.  You can replace the png values with names of files in your images folder.)
     ```
     vehicles.push({
       vehicle: mockVehicles.ice#,
       info: mockVehicles.ice#_info,
-      extra: makeExtra(mockVehicles.ice#_info),
+      extra: makeExtra('full-image.png', 'thumbnail.png'),
     });
     ```
 1. If your serviceCompatible=false or vehicleAuthorizationIndicator=0 you should use the following code instead: (replace # with the same value as used in previous steps.)
@@ -93,7 +93,7 @@ as used in the previous step.)
     vehicles.push({
       vehicle: mockVehicles.ice#,
       info: undefined,
-      extra: undefined,
+      extra: makeExtra('full-image.png', 'thumbnail.png'),
     });
     ```
 

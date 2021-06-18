@@ -51,16 +51,11 @@ const app = express();
  * Returns an object with extra properties about the vehicle.  Most of the properties can be
  * used to determine the current state of the vehicle.
  *
- * @param {info} vehicleInfo The vechicle information JSON (like vehicleDetails,
- * vehicleStatus, etc.)
+ * @param {*} full Name of large image image.
+ * @param {*} thumbnail Name of thumbnail image.
  * @returns The extra property for the vehicle, or undefined.
  */
-function makeExtra(vehicleInfo) {
-  if (vehicleInfo === undefined) {
-    return undefined;
-  }
-
-  // TODO: We could set Started/Stopped based on vehicleInfo?
+function makeExtra(full, thumbnail) {
   return {
     doorsLocked: true,
     doorsLockedTimestamp: timestamp.now(),
@@ -71,6 +66,8 @@ function makeExtra(vehicleInfo) {
     lastWake: 0,
     lastStartCharge: 0,
     lastStopCharge: 0,
+    image: full === undefined ? 'full-image.png' : full,
+    imageThumbnail: thumbnail === undefined ? 'thumbnail.png' : thumbnail,
   };
 }
 
@@ -85,18 +82,18 @@ const vehicles = [];
 vehicles.push({
   vehicle: mockVehicles.ice1,
   info: mockVehicles.ice1_info,
-  extra: makeExtra(mockVehicles.ice1_info),
+  extra: makeExtra('full-image.png', 'thumbnail.png'),
 });
 // IMPORTANT: Put your list of test vehicles here.  See the README.md file for directions.
 vehicles.push({
   vehicle: mockVehicles.ice2,
   info: undefined,
-  extra: undefined,
+  extra: makeExtra('full-image.png', 'thumbnail.png'),
 });
 vehicles.push({
   vehicle: mockVehicles.ev1,
   info: mockVehicles.ev1_info,
-  extra: makeExtra(mockVehicles.ev1_info),
+  extra: makeExtra('full-image.png', 'thumbnail.png'),
   evdata: mockVehicles.ev1_evdata,
 });
 
@@ -1101,13 +1098,11 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/location', (req, res) => {
 });
 
 app.get('/api/fordconnect/vehicles/v1/:vehicleId/images/full', (req, res) => {
-  // TODO: Support associating the image with the vehicle.
-  vehicleIdGetImage(req, res, () => 'full-image.png');
+  vehicleIdGetImage(req, res, (match) => match.extra.image);
 });
 
 app.get('/api/fordconnect/vehicles/v1/:vehicleId/images/thumbnail', (req, res) => {
-  // TODO: Support associating the image with the vehicle.
-  vehicleIdGetImage(req, res, () => 'thumbnail.png');
+  vehicleIdGetImage(req, res, (match) => match.extra.imageThumbnail);
 });
 
 /**
