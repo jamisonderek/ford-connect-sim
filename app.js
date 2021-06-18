@@ -1339,6 +1339,60 @@ app.post('/sim/ignition/:vehicleId', (req, res) => {
   return undefined;
 });
 
+// Sets the fuel level on an ICE vehicle.
+//
+// param: level  (0 to 100.0)
+// param: dte (distance to empty, in km.)
+// expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
+//
+// example query: /sim/fuel/12341234123412341234123412341234?level=100.0&dte=700.0
+app.post('/sim/fuel/:vehicleId', (req, res) => {
+  const { level } = req.query;
+  const { dte } = req.query;
+  const match = getVehicleOrSendError(req, res);
+
+  if (match) {
+    if (!match.info || match.info.engineType !== 'ICE') {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'vehicleId is not an ICE vehicle.',
+      });
+    }
+
+    const levelSetting = level !== undefined ? parseFloat(level, 10) : undefined;
+    const distanceToEmpty = dte !== undefined ? parseFloat(dte, 10) : undefined;
+
+    if (levelSetting === undefined || Number.isNaN(levelSetting)) {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'parameter \'level\' should be a float (0 to 100).',
+      });
+    }
+
+    if (distanceToEmpty === undefined || Number.isNaN(distanceToEmpty)) {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'parameter \'dte\' should be a float (distance in km)).',
+      });
+    }
+
+    match.info.vehicleDetails.fuelLevel.value = levelSetting;
+    match.info.vehicleDetails.fuelLevel.distanceToEmpty = distanceToEmpty;
+    match.info.vehicleDetails.fuelLevel.timestamp = timestamp.now();
+
+    res.statusCode = 200;
+    return res.json({
+      status: 'SUCCESS',
+      msg: 'Set fuel level successfully.',
+    });
+  }
+
+  return undefined;
+});
+
 app.use((req, res) => {
   res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
 });
