@@ -1261,6 +1261,49 @@ app.post('/sim/firmware/:vehicleId', (req, res) => {
   return undefined;
 });
 
+// Sets the plug status on an EV vehicle.
+//
+// param: connected  (true/false)
+// expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
+//
+// example query: /sim/plug/22221111111111151111111111112222?connected=true
+app.post('/sim/plug/:vehicleId', (req, res) => {
+  const { connected } = req.query;
+  const match = getVehicleOrSendError(req, res);
+
+  if (match) {
+    if (!match.info || match.info.engineType !== 'EV') {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'vehicleId is not an EV vehicle.',
+      });
+    }
+
+    const setting = toBoolean(connected);
+
+    if (setting === undefined) {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'parameter \'connected\' must be (true or false).',
+      });
+    }
+
+    match.info.vehicleStatus.plugStatus.value = setting;
+    match.info.vehicleStatus.plugStatus.timeStamp = timestamp.now();
+    // TODO: #26 - Should charging status change?
+
+    res.statusCode = 200;
+    return res.json({
+      status: 'SUCCESS',
+      msg: `Plug status set to ${setting} successfully.`,
+    });
+  }
+
+  return undefined;
+});
+
 app.use((req, res) => {
   res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
 });
