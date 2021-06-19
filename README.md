@@ -133,8 +133,8 @@ done|GET|api/fordconnect/vehicles/v1/:vehicleId/statusrefresh|Vehicle Status
 done|GET|api/fordconnect/vehicles/v1/:vehicleId|Vehicle Information
 done|POST|api/fordconnect/vehicles/v1/:vehicleId/location|Vehicle Location
 done|GET|api/fordconnect/vehicles/v1/:vehicleId/location|Vehicle Location
-50%|GET|api/fordconnect/vehicles/v1/:vehicleId/images/thumbnail|Get Vehicle Image Thumbnail
-50%|GET|api/fordconnect/vehicles/v1/:vehicleId/images/full|Get image Full
+done|GET|api/fordconnect/vehicles/v1/:vehicleId/images/thumbnail|Get Vehicle Image Thumbnail
+done|GET|api/fordconnect/vehicles/v1/:vehicleId/images/full|Get image Full
 
 ## Exposing your simulator on the Internet
 You can expose your simulator from your local development environment onto the internet using ngrok.  To use ngrok, simply follow the directions at https://dashboard.ngrok.com/get-started/setup.  IF you don't already have an account, click "Sign up for free" at the bottom of the login page.  After you signup, you many need to reload the above url.
