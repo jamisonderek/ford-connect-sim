@@ -136,6 +136,25 @@ done|GET|api/fordconnect/vehicles/v1/:vehicleId/location|Vehicle Location
 done|GET|api/fordconnect/vehicles/v1/:vehicleId/images/thumbnail|Get Vehicle Image Thumbnail
 done|GET|api/fordconnect/vehicles/v1/:vehicleId/images/full|Get image Full
 
+## Changing simulation data
+For more information about the simulation routes, please look in app.js file, search for your route name, like "('/sim/today" (without the quotes).  The comments should show more information about the parameters.
+
+|route|params (*=optional)|example|comments|
+|-----|------|-------|-------|
+|/sim/today|day, time|day=FRIDAY&time=13:15|Set the simulator's today value (used for determining the next departure time.)
+|/sim/psi/:vehicleId|warning|warning=true|Sets the tirePressureWarning on a vehicle.
+|/sim/modem/:vehicleId|enabled|enabled=false|Sets the modem on a vehicle.
+|/sim/deepsleep/:vehicleId|sleep|sleep=false|Sets the deep sleep for the vehicle.
+|/sim/firmware/:vehicleId|upgrade|upgrade=true|Sets the firmwareUpgradeInProgess on a vehicle.
+|/sim/plug/:vehicleId|connected|connected=true|Sets the plug status on an EV vehicle.
+|/sim/ignition/:vehicleId|value|value=on|Sets the ignition status on the vehicle.
+|/sim/fuel/:vehicleId|level, dte|level=100.0&dte=700.0|Sets the fuel level on an ICE vehicle. "level" is a percentage, "dte" (distance to empty) is in km not miles.
+|/sim/battery/:vehicleId|level, dte|level=100.0&dte=400.0|Sets the battery level on an EV vehicle. "level" is a percentage, "dte" (distance to empty) is in km not miles.
+|/sim/location/:vehicleId|lat, long, distance, speed*, direction*|lat=36.105539&long=-95.885703100.0&distance=3.1|Sets the location of a vehicle. You can optionally specify a speed and direction (like NorthWest).
+|/sim/door/:vehicleId|door, state, role*|door=UNSPECIFIED_FRONT&role=DRIVER&state=OPEN|Opens or closes a door on the vehicle.
+|/sim/alarm/:vehicleId|enabled|enabled=true|Sets the alarm for the vehicle.
+
+
 ## Exposing your simulator on the Internet
 You can expose your simulator from your local development environment onto the internet using ngrok.  To use ngrok, simply follow the directions at https://dashboard.ngrok.com/get-started/setup.  IF you don't already have an account, click "Sign up for free" at the bottom of the login page.  After you signup, you many need to reload the above url.
 The steps are basically:
@@ -150,6 +169,8 @@ The steps are basically:
    ```
 1. Start sending requests to your forwarding address.  For example https://f4460d6eed92.ngrok.io/api/fordconnect/vehicles/v1.
 1. You can also open the Web Interface to see the requests and more details.  For example http://127.0.0.1:4040 which allows you to click on a request and see the data (sent/received) and even replay the request while modifying some of the data.  
+
+Always carefully monitor your computer usage when you make services available online.  The ford-connect-simulator has not gone through a security review, so it's possible a route could expose sensitive data. 
 
 ## Known issues
 The following issues will be addressed in a future update.
