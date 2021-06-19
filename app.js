@@ -1371,7 +1371,7 @@ app.post('/sim/modem/:vehicleId', (req, res) => {
 // param: sleep  (true/false)
 // expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
 //
-// example query: /sim/modem/22221111111111151111111111112222?sleep=false
+// example query: /sim/deepsleep/22221111111111151111111111112222?sleep=false
 app.post('/sim/deepsleep/:vehicleId', (req, res) => {
   const { sleep } = req.query;
   const match = getVehicleOrSendError(req, res);
