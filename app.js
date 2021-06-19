@@ -1629,7 +1629,7 @@ app.post('/sim/battery/:vehicleId', (req, res) => {
 // expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
 //
 // example query:
-//  /sim/location/22221111111111151111111111112222?lat=36.105539&long=-95.885703100.0&distance=3.1
+//  /sim/location/22221111111111151111111111112222?lat=36.105539&long=-95.885703&distance=3.1
 app.post('/sim/location/:vehicleId', (req, res) => {
   const { lat } = req.query;
   const { long } = req.query;
@@ -1678,8 +1678,8 @@ app.post('/sim/location/:vehicleId', (req, res) => {
       });
     }
 
-    match.info.vehicleStatus.vehicleLocation.latitude = latitude;
-    match.info.vehicleStatus.vehicleLocation.longitude = longitude;
+    match.info.vehicleStatus.vehicleLocation.latitude = latitude.toFixed(6).toString();
+    match.info.vehicleStatus.vehicleLocation.longitude = longitude.toFixed(6).toString();
     match.info.vehicleStatus.vehicleLocation.timeStamp = timestamp.now();
     match.info.vehicleDetails.mileage += distanceInMiles;
     match.info.vehicleDetails.odometer += (distanceInMiles * 1.609344);

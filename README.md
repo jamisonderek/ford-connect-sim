@@ -150,7 +150,7 @@ For more information about the simulation routes, please look in app.js file, se
 |/sim/ignition/:vehicleId|value|value=on|Sets the ignition status on the vehicle.
 |/sim/fuel/:vehicleId|level, dte|level=100.0&dte=700.0|Sets the fuel level on an ICE vehicle. "level" is a percentage, "dte" (distance to empty) is in km not miles.
 |/sim/battery/:vehicleId|level, dte|level=100.0&dte=400.0|Sets the battery level on an EV vehicle. "level" is a percentage, "dte" (distance to empty) is in km not miles.
-|/sim/location/:vehicleId|lat, long, distance, speed*, direction*|lat=36.105539&long=-95.885703100.0&distance=3.1|Sets the location of a vehicle. You can optionally specify a speed and direction (like NorthWest).
+|/sim/location/:vehicleId|lat, long, distance, speed*, direction*|lat=36.105539&long=-95.885703&distance=3.1|Sets the location of a vehicle. You can optionally specify a speed and direction (like NorthWest).
 |/sim/door/:vehicleId|door, state, role*|door=UNSPECIFIED_FRONT&role=DRIVER&state=OPEN|Opens or closes a door on the vehicle.
 |/sim/alarm/:vehicleId|enabled|enabled=true|Sets the alarm for the vehicle.
 
