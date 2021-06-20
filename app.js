@@ -136,10 +136,14 @@ const commands = {
 };
 
 const httpPort = parseInt(process.env.FORDSIM_HTTPPORT, 10) || 80;
-console.log(`Listening on port ${httpPort}`);
 
 const httpServer = http.createServer(app);
-httpServer.listen(httpPort);
+if (process.env.NODE_ENV !== 'test') {
+  console.log(`Listening on port ${httpPort}`);
+  httpServer.listen(httpPort);
+} else {
+  console.log('WARNING: Environment set to "test" so not enabling listener.');
+}
 
 // We have POST data for our OAuth2 routes.  Use express-formidable middleware to parse.
 app.use(formidable());
@@ -1818,3 +1822,6 @@ app.post('/sim/alarm/:vehicleId', (req, res) => {
 app.use((req, res) => {
   res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
 });
+
+exports.server = app;
+exports.vehicleData = vehicles;
