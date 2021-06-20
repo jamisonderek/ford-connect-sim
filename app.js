@@ -242,7 +242,8 @@ function reflectedUserInput(value) {
 
 /**
  * Returns a deep copy of the item specified, so that any modifications will not impact the
- * original object.
+ * original object.  NOTE: This does not handle copying properties that are set to undefined.
+ *
  * @param {*} item The item to make a copy of.
  * @returns A copy of the item.
  */
