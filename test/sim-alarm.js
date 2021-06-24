@@ -17,7 +17,7 @@ const { vehicleData } = app;
 
 chai.use(chaiHttp);
 
-describe('Alarm tests', () => {
+describe('Sim Alarm tests', () => {
   beforeEach((done) => {
     done();
   });
