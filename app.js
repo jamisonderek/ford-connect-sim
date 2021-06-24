@@ -712,6 +712,7 @@ function vehicleIdPostMethod(req, res, requiresEv, fn) {
     };
 
     res.statusCode = 202;
+    res.setHeader('Vehicleid', match.vehicle.vehicleId);
     return res.json(response);
   }
 
@@ -1824,5 +1825,6 @@ app.use((req, res) => {
   res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
 });
 
+exports.generateToken = generateToken;
 exports.server = app;
 exports.vehicleData = vehicles;
