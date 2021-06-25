@@ -14,6 +14,8 @@ const { expect } = chai;
 
 const { server } = app;
 const { generateToken } = app;
+const { commands } = app;
+const { createCommand } = app;
 
 chai.use(chaiHttp);
 
@@ -189,6 +191,67 @@ describe('Unlock tests', () => {
             res.should.have.status(401);
             done();
           });
+      });
+    });
+  });
+  describe('GET /api/fordconnect/vehicles/v1/:vehicleId/unlock/:commandId', () => {
+    describe('with valid vehicleId', () => {
+      describe('with valid commandId used immediately (pending)', () => {
+        const anyVehicleId = mockVehicles.ev1.vehicleId;
+        const cmd = createCommand(anyVehicleId);
+        commands.unlock.push(cmd);
+        const url = `/api/fordconnect/vehicles/v1/${anyVehicleId}/unlock/${cmd.commandId}`;
+        it('it should return HTTP 200 status code', (done) => {
+          chai.request(server)
+            .get(url)
+            .auth(authToken, { type: 'bearer' })
+            .send()
+            .end((err, res) => {
+              res.should.have.status(200);
+              done();
+            });
+        });
+        it('it should return body with status of SUCCESS', (done) => {
+          chai.request(server)
+            .get(url)
+            .auth(authToken, { type: 'bearer' })
+            .send()
+            .end((err, res) => {
+              expect(res.body.status).to.equal('SUCCESS');
+              done();
+            });
+        });
+        it('it should return body with commandStatus of PENDINGRESPONSE', (done) => {
+          chai.request(server)
+            .get(url)
+            .auth(authToken, { type: 'bearer' })
+            .send()
+            .end((err, res) => {
+              expect(res.body.commandStatus).to.equal('PENDINGRESPONSE');
+              done();
+            });
+        });
+        it('it should return body with commandId of matching id', (done) => {
+          chai.request(server)
+            .get(url)
+            .auth(authToken, { type: 'bearer' })
+            .send()
+            .end((err, res) => {
+              expect(res.body.commandId).to.equal(cmd.commandId);
+              done();
+            });
+        });
+        it('it should return header with Vehicleid containing the vehicleid requested', (done) => {
+          const queriedVehicle = anyVehicleId;
+          chai.request(server)
+            .get(url)
+            .auth(authToken, { type: 'bearer' })
+            .send()
+            .end((err, res) => {
+              expect(res.header.vehicleid).to.equal(queriedVehicle);
+              done();
+            });
+        });
       });
     });
   });

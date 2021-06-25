@@ -763,6 +763,7 @@ function vehicleIdGetCommandStatus(req, res, commandArray, fn) {
     fn(req, res, match, command, response);
 
     res.statusCode = 200;
+    res.setHeader('Vehicleid', match.vehicle.vehicleId);
     return res.json(response);
   }
 
@@ -1825,6 +1826,8 @@ app.use((req, res) => {
   res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
 });
 
+exports.commands = commands;
+exports.createCommand = createCommand;
 exports.generateToken = generateToken;
 exports.server = app;
 exports.vehicleData = vehicles;
