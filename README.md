@@ -10,9 +10,6 @@ This simulator is intented to run on your local development environment exposing
 
 This simulator was created to try to assist engineers that are using the FordConnect API but don't have access to a physical vehicle for test scenarios.  Development for this simulator was done without having a physical vehicle connected to the API, so there are possible bugs.  Please report any issues at the [github issues](https://github.com/jamisonderek/ford-connect-sim/issues) page.  In addition to testing your application using the simulator, please ensure you test your application against the real FordConnect API.
 
-## Work-in-progress
-This simulator is currently a work in progress.  Please see the list of [Known issues](#known-issues).
-
 ## Starting the simulator
 This project requires you have [Node.js](https://nodejs.org/en/download/) and npm installed.  This version was developed and testing using Node version 15.5.1, npm 7.17.0 and Windows 10 (19042.1052).  You can check your vesrions by using the following command:
 ```
@@ -110,31 +107,31 @@ All of the other APIs should work (you just need to change their domain to http:
 
 NOTE: At some point you will want to swtich back to using the FordConnect API, you must make sure your refresh token is from either the "Ford Get Token" or "Ford Get Refresh Token" service (you can see it in the output window from your last successful call to either API).  Open the environment variables, scroll down to refreshToken and make sure your current value is correct.  Once it is correct, click the Send button on the "Ford Get Refresh Token".  Don't forget to also update your vehicleId.
 
-|percent complete|verb|route|Postman Name|
-|----------------|----|-----|------------|
-done|POST|/oauth2/v2.0/token (grant_type=authorization_code)|Ford Get Token
-done|POST|/oauth2/v2.0/token (grant_type=refresh_token)|Ford Get Refresh Token
-done|GET|api/fordconnect/vehicles/v1||Get Vehicle List
-done|POST|api/fordconnect/vehicles/v1/:vehicleId/unlock|Unlock Vehicle
-done|GET|api/fordconnect/vehicles/v1/:vehicleId/unlock/:unlockCommandId|Unlock Command Status
-done|POST|api/fordconnect/vehicles/v1/:vehicleId/lock|Lock Vehicle
-done|GET|api/fordconnect/vehicles/v1/:vehicleId/lock/:lockCommandId|Lock Command Status
-70%|POST|api/fordconnect/vehicles/v1/:vehicleId/startEngine|Start Engine
-70%|GET|api/fordconnect/vehicles/v1/:vehicleId/startEngine/:startCommandId|Start Command Status
-70%|POST|api/fordconnect/vehicles/v1/:vehicleId/stopEngine|Stop Engine
-70%|GET|api/fordconnect/vehicles/v1/:vehicleId/stopEngine/:stopCommandId|Start Command Status
-done|POST|api/fordconnect/vehicles/v1/:vehicleId/wake|Wake 
-50%|POST|api/fordconnect/vehicles/v1/:vehicleId/startCharge|Start Charge
-50%|POST|api/fordconnect/vehicles/v1/:vehicleId/stopCharge|Stop Charge
-done|GET|api/fordconnect/vehicles/v1/:vehicleId/chargeSchedules|Get charge schedule
-done|GET|api/fordconnect/vehicles/v1/:vehicleId/departureTimes|Get departure times
-done|POST|api/fordconnect/vehicles/v1/:vehicleId/status|Vehicle Status
-done|GET|api/fordconnect/vehicles/v1/:vehicleId/statusrefresh|Vehicle Status
-done|GET|api/fordconnect/vehicles/v1/:vehicleId|Vehicle Information
-done|POST|api/fordconnect/vehicles/v1/:vehicleId/location|Vehicle Location
-done|GET|api/fordconnect/vehicles/v1/:vehicleId/location|Vehicle Location
-done|GET|api/fordconnect/vehicles/v1/:vehicleId/images/thumbnail|Get Vehicle Image Thumbnail
-done|GET|api/fordconnect/vehicles/v1/:vehicleId/images/full|Get image Full
+|verb|route|Postman Name|
+|----|-----|------------|
+POST|/oauth2/v2.0/token (grant_type=authorization_code)|Ford Get Token
+POST|/oauth2/v2.0/token (grant_type=refresh_token)|Ford Get Refresh Token
+GET|api/fordconnect/vehicles/v1||Get Vehicle List
+POST|api/fordconnect/vehicles/v1/:vehicleId/unlock|Unlock Vehicle
+GET|api/fordconnect/vehicles/v1/:vehicleId/unlock/:unlockCommandId|Unlock Command Status
+POST|api/fordconnect/vehicles/v1/:vehicleId/lock|Lock Vehicle
+GET|api/fordconnect/vehicles/v1/:vehicleId/lock/:lockCommandId|Lock Command Status
+POST|api/fordconnect/vehicles/v1/:vehicleId/startEngine|Start Engine
+GET|api/fordconnect/vehicles/v1/:vehicleId/startEngine/:startCommandId|Start Command Status
+POST|api/fordconnect/vehicles/v1/:vehicleId/stopEngine|Stop Engine
+GET|api/fordconnect/vehicles/v1/:vehicleId/stopEngine/:stopCommandId|Start Command Status
+POST|api/fordconnect/vehicles/v1/:vehicleId/wake|Wake 
+POST|api/fordconnect/vehicles/v1/:vehicleId/startCharge|Start Charge
+POST|api/fordconnect/vehicles/v1/:vehicleId/stopCharge|Stop Charge
+GET|api/fordconnect/vehicles/v1/:vehicleId/chargeSchedules|Get charge schedule
+GET|api/fordconnect/vehicles/v1/:vehicleId/departureTimes|Get departure times
+POST|api/fordconnect/vehicles/v1/:vehicleId/status|Vehicle Status
+GET|api/fordconnect/vehicles/v1/:vehicleId/statusrefresh|Vehicle Status
+GET|api/fordconnect/vehicles/v1/:vehicleId|Vehicle Information
+POST|api/fordconnect/vehicles/v1/:vehicleId/location|Vehicle Location
+GET|api/fordconnect/vehicles/v1/:vehicleId/location|Vehicle Location
+GET|api/fordconnect/vehicles/v1/:vehicleId/images/thumbnail|Get Vehicle Image Thumbnail
+GET|api/fordconnect/vehicles/v1/:vehicleId/images/full|Get image Full
 
 ## Changing simulation data
 For more information about the simulation routes, please look in app.js file, search for your route name, like "('/sim/today" (without the quotes).  The comments should show more information about the parameters.
@@ -171,6 +168,12 @@ The steps are basically:
 1. You can also open the Web Interface to see the requests and more details.  For example http://127.0.0.1:4040 which allows you to click on a request and see the data (sent/received) and even replay the request while modifying some of the data.  
 
 Always carefully monitor your computer usage when you make services available online.  The ford-connect-simulator has not gone through a security review, so it's possible a route could expose sensitive data. 
+
+## Running tests
+The following command will run the tests against the simulator
+```
+npm test
+```
 
 ## Known issues
 The following issues will be addressed in a future update.
