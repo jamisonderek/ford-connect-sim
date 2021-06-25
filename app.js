@@ -356,9 +356,11 @@ function sendTokenExpiredJson(req, res) {
  * @param {*} req The request object.
  * @param {*} res The response object.
  * @param {*} commandId The commandId the user specified or undefined.
+ * @param {*} vehicleId The vehicleId the user specified or undefined.
+ *
  * @returns The res.json result.
  */
-function sendUnauthorizedUser(req, res, commandId) {
+function sendUnauthorizedUser(req, res, commandId, vehicleId) {
   res.statusCode = 401;
   const response = {
     error: {
@@ -372,6 +374,9 @@ function sendUnauthorizedUser(req, res, commandId) {
   };
   if (commandId !== undefined) {
     response.commandId = reflectedUserInput(commandId);
+  }
+  if (vehicleId) {
+    res.setHeader('Vehicleid', vehicleId);
   }
   return res.json(response);
 }
@@ -425,25 +430,25 @@ function sendNotFound(req, res) {
  * @param {*} req The request object.
  * @param {*} res The response object.
  * @param {*} isPost Boolean. true if request is POST, false if GET.
+ * @param {*} vehicleId The vehicleId the user specified or undefined.
  * @returns The res.json result.
  */
-function sendVehicleNotAuthorized(req, res, isPost) {
-  let response;
+function sendVehicleNotAuthorized(req, res, isPost, vehicleId) {
   if (isPost) {
-    sendUnauthorizedUser(req, res, undefined);
-  } else {
-    res.statusCode = 406;
-    response = {
-      error: {
-        code: 4006,
-        title: 'Not Acceptable',
-        details: 'Not acceptable',
-        statusCode: 'NOT_ACCEPTABLE',
-      },
-      status: 'FAILED',
-    };
+    return sendUnauthorizedUser(req, res, undefined, vehicleId);
   }
 
+  res.statusCode = 406;
+  const response = {
+    error: {
+      code: 4006,
+      title: 'Not Acceptable',
+      details: 'Not acceptable',
+      statusCode: 'NOT_ACCEPTABLE',
+    },
+    status: 'FAILED',
+  };
+  res.setHeader('Vehicleid', vehicleId);
   return res.json(response);
 }
 
@@ -580,7 +585,7 @@ function getVehicleOrSendError(req, res) {
   }
 
   if (!matches[0].vehicle.vehicleAuthorizationIndicator) {
-    sendVehicleNotAuthorized(req, res, true);
+    sendVehicleNotAuthorized(req, res, true, reflectedUserInput(vehicleId));
     return undefined;
   }
 
@@ -738,7 +743,7 @@ function vehicleIdGetCommandStatus(req, res, commandArray, fn) {
     const command = getCommand(req, commandArray);
     if (command === undefined) {
       const { commandId } = req.params;
-      return sendUnauthorizedUser(res, res, reflectedUserInput(commandId));
+      return sendUnauthorizedUser(res, res, reflectedUserInput(commandId), match.vehicle.vehicleId);
     }
 
     // Change the commandStatus based on how long ago the original POST request was.
