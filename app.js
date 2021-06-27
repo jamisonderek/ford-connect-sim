@@ -1090,6 +1090,7 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId', (req, res) => {
 
 app.post('/api/fordconnect/vehicles/v1/:vehicleId/location', (req, res) => {
   vehicleIdPostMethod(req, res, false, (_req, _res, match, command) => {
+    // NOTE: This commandId isn't used for anything by FordConnect API.
     commands.location.push(command);
   });
 });
@@ -1106,7 +1107,7 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/location', (req, res) => {
         status: 'SUCCESS',
         vehicleLocation: DeepCopy(match.info.vehicleStatus.vehicleLocation),
       };
-
+      res.setHeader('Vehicleid', match.vehicle.vehicleId);
       return res.json(location);
     }
 
