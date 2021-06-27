@@ -70,6 +70,80 @@ describe('Sim Alarm tests', () => {
           });
       });
     });
+    describe('with state disabled', () => {
+      it('it should set alarmEnabled to false', (done) => {
+        const anyVehicleId = vehicleData[0].vehicle.vehicleId;
+        vehicleData[0].extra.alarmEnabled = true;
+        chai.request(server)
+          .post(`/sim/alarm/${anyVehicleId}?state=disabled`)
+          .send()
+          .end(() => {
+            vehicleData[0].extra.alarmEnabled.should.be.false;
+            done();
+          });
+      });
+    });
+    describe('with state enabled', () => {
+      it('it should set alarmEnabled to true', (done) => {
+        const anyVehicleId = vehicleData[0].vehicle.vehicleId;
+        vehicleData[0].extra.alarmEnabled = false;
+        chai.request(server)
+          .post(`/sim/alarm/${anyVehicleId}?state=enabled`)
+          .send()
+          .end(() => {
+            vehicleData[0].extra.alarmEnabled.should.be.true;
+            done();
+          });
+      });
+    });
+    describe('with state triggered', () => {
+      it('it should set alarmEnabled to true', (done) => {
+        const anyVehicleId = vehicleData[0].vehicle.vehicleId;
+        vehicleData[0].extra.alarmEnabled = false;
+        chai.request(server)
+          .post(`/sim/alarm/${anyVehicleId}?state=triggered`)
+          .send()
+          .end(() => {
+            vehicleData[0].extra.alarmEnabled.should.be.true;
+            done();
+          });
+      });
+      it('it should set alarmTriggered to true', (done) => {
+        const anyVehicleId = vehicleData[0].vehicle.vehicleId;
+        vehicleData[0].extra.alarmTriggered = false;
+        chai.request(server)
+          .post(`/sim/alarm/${anyVehicleId}?state=triggered`)
+          .send()
+          .end(() => {
+            vehicleData[0].extra.alarmTriggered.should.be.true;
+            done();
+          });
+      });
+    });
+    describe('with state error', () => {
+      it('it should set alarmEnabled to undefined', (done) => {
+        const anyVehicleId = vehicleData[0].vehicle.vehicleId;
+        vehicleData[0].extra.alarmEnabled = false;
+        chai.request(server)
+          .post(`/sim/alarm/${anyVehicleId}?state=error`)
+          .send()
+          .end(() => {
+            expect(vehicleData[0].extra.alarmEnabled).to.be.undefined;
+            done();
+          });
+      });
+      it('it should set alarmTriggered to undefined', (done) => {
+        const anyVehicleId = vehicleData[0].vehicle.vehicleId;
+        vehicleData[0].extra.alarmTriggered = false;
+        chai.request(server)
+          .post(`/sim/alarm/${anyVehicleId}?state=error`)
+          .send()
+          .end(() => {
+            expect(vehicleData[0].extra.alarmTriggered).to.be.undefined;
+            done();
+          });
+      });
+    });
     describe('with enabled parameter missing', () => {
       it('it should have http status code 400', (done) => {
         const anyVehicleId = vehicleData[0].vehicle.vehicleId;
@@ -93,14 +167,14 @@ describe('Sim Alarm tests', () => {
             done();
           });
       });
-      it('it should have msg containing paraneter name (enabled)', (done) => {
+      it('it should have msg containing paraneter name (state)', (done) => {
         const anyVehicleId = vehicleData[0].vehicle.vehicleId;
         vehicleData[0].extra.alarmEnabled = true;
         chai.request(server)
           .post(`/sim/alarm/${anyVehicleId}`)
           .send()
           .end((err, res) => {
-            expect(res.body.msg).to.contain('parameter \'enabled\'');
+            expect(res.body.msg).to.contain('parameter \'state\'');
             done();
           });
       });
@@ -111,7 +185,7 @@ describe('Sim Alarm tests', () => {
           .post(`/sim/alarm/${anyVehicleId}`)
           .send()
           .end((err, res) => {
-            expect(res.body.msg).to.contain('true or false');
+            expect(res.body.msg).to.contain('enabled, disabled, triggered, error');
             done();
           });
       });

@@ -61,6 +61,7 @@ function makeExtra(full, thumbnail) {
     doorsLocked: true,
     doorsLockedTimestamp: timestamp.now(),
     alarmEnabled: false,
+    alarmTriggered: false,
     alarmTimestamp: timestamp.now(),
     lastStarted: 0, // These are Date.now() values.
     lastStopped: 0,
@@ -1050,14 +1051,18 @@ app.post('/api/fordconnect/vehicles/v1/:vehicleId/status', (req, res) => {
 app.get('/api/fordconnect/vehicles/v1/:vehicleId/statusrefresh/:commandId', (req, res) => {
   vehicleIdGetCommandStatus(req, res, commands.status, (_, __, match, command, response) => {
     if (command.commandStatus === 'COMPLETED') {
+      const alarmEnabled = match.extra.alarmEnabled ? 'SET' : 'NOTSET';
+      let alarmValue = match.extra.alarmTriggered ? 'ACTIVE' : alarmEnabled;
+      if (match.extra.alarmTriggered === undefined) {
+        alarmValue = 'ERROR';
+      }
       response.vehicleStatus = {
         lockStatus: {
           value: match.extra.doorsLocked ? 'LOCKED' : 'UNLOCKED',
           timestamp: match.extra.doorsLockedTimestamp,
         },
         alarm: {
-          // TODO: #30 - What is proper value for an enabled alarm?
-          value: match.extra.alarmEnabled ? 'SET' : 'NOTSET',
+          value: alarmValue,
           timestamp: match.extra.alarmTimestamp,
         },
       };
@@ -1795,26 +1800,41 @@ app.post('/sim/door/:vehicleId', (req, res) => {
 
 // Sets the alarm for the vehicle.
 //
-// param: enabled  (true/false)
+// param: state  (enabled, disabled, triggered, error)
+// deprecated param: enabled  (true/false)
 // expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
 //
-// example query: /sim/alarm/22221111111111151111111111112222?enabled=true
+// example query: /sim/alarm/22221111111111151111111111112222?state=enabled
 app.post('/sim/alarm/:vehicleId', (req, res) => {
+  let { state } = req.query;
   const { enabled } = req.query;
+  const setting = toBoolean(enabled);
+  if (setting !== undefined) {
+    state = setting ? 'enabled' : 'disabled';
+  } else if (state !== undefined) {
+    state = state.toLowerCase();
+    if (state !== 'enabled' && state !== 'disabled' && state !== 'triggered' && state !== 'error') {
+      state = undefined;
+    }
+  }
+
   const match = getVehicleOrSendError(req, res);
 
   if (match) {
-    const setting = toBoolean(enabled);
-
-    if (setting === undefined) {
+    if (state === undefined) {
       res.statusCode = 400;
       return res.json({
         status: 'ERROR',
-        msg: 'parameter \'enabled\' must be (true or false).',
+        msg: 'parameter \'state\' must be (enabled, disabled, triggered, error).',
       });
     }
 
-    match.extra.alarmEnabled = setting;
+    match.extra.alarmEnabled = state === 'enabled' || state === 'triggered';
+    match.extra.alarmTriggered = state === 'triggered';
+    if (state === 'error') {
+      match.extra.alarmEnabled = undefined;
+      match.extra.alarmTriggered = undefined;
+    }
     match.extra.alarmTimestamp = timestamp.now();
 
     res.statusCode = 200;
