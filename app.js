@@ -1852,6 +1852,48 @@ app.post('/sim/alarm/:vehicleId', (req, res) => {
   return undefined;
 });
 
+// Sets the door locks for the vehicle.
+//
+// param: state  (locked, unlocked, error)
+// expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
+//
+// example query: /sim/locks/22221111111111151111111111112222?state=error
+app.post('/sim/locks/:vehicleId', (req, res) => {
+  let { state } = req.query;
+  if (state !== undefined) {
+    state = state.toLowerCase();
+    if (state !== 'locked' && state !== 'unlocked' && state !== 'error') {
+      state = undefined;
+    }
+  }
+
+  const match = getVehicleOrSendError(req, res);
+
+  if (match) {
+    if (state === undefined) {
+      res.statusCode = 400;
+      return res.json({
+        status: 'ERROR',
+        msg: 'parameter \'state\' must be (locked, unlocked, error).',
+      });
+    }
+
+    match.extra.doorsLocked = state === 'locked';
+    if (state === 'error') {
+      match.extra.doorsLocked = undefined;
+    }
+    match.extra.doorsLockedTimestamp = timestamp.now();
+
+    res.statusCode = 200;
+    return res.json({
+      msg: `Alarm set to ${state} successfully.`,
+      status: 'SUCCESS',
+    });
+  }
+
+  return undefined;
+});
+
 app.use((req, res) => {
   res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
 });
