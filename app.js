@@ -400,8 +400,6 @@ function sendNotFound(req, res) {
     status: 'FAILED',
   };
 
-  // TEST: Retest this logic.
-
   if (req.method === 'POST') {
     if (req.originalUrl.indexOf('Charge') > 0) {
       response.commandStatus = 'FAILED';
