@@ -405,6 +405,19 @@ describe('Status tests', () => {
               done();
             });
         });
+        it('it should return vehicleStatus with lockStatus value of ERROR when undefined state', (done) => {
+          const vehicle = vehicleData.filter((v) => v.vehicle.vehicleId === anyVehicleId)[0];
+          vehicle.extra.doorsLocked = undefined;
+          vehicle.extra.doorsLockedTimestamp = timestamp.now();
+          chai.request(server)
+            .get(url)
+            .auth(authToken, { type: 'bearer' })
+            .send()
+            .end((err, res) => {
+              expect(res.body.vehicleStatus.lockStatus.value).to.equal('ERROR');
+              done();
+            });
+        });
         it('it should return vehicleStatus with lockStatus timestamp of when locked', (done) => {
           const ts = timestamp.now();
           const vehicle = vehicleData.filter((v) => v.vehicle.vehicleId === anyVehicleId)[0];
