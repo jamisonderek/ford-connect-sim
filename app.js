@@ -619,7 +619,6 @@ function getCommand(req, commandArray) {
       // eslint-disable-next-line prefer-destructuring
       match = matches[0];
       if (Date.now() - match.timestamp > commandTimeoutInSeconds * 1000) {
-        console.log('command expired.');
         match = undefined;
       }
     }
