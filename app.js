@@ -1051,6 +1051,11 @@ app.post('/api/fordconnect/vehicles/v1/:vehicleId/status', (req, res) => {
 app.get('/api/fordconnect/vehicles/v1/:vehicleId/statusrefresh/:commandId', (req, res) => {
   vehicleIdGetCommandStatus(req, res, commands.status, (_, __, match, command, response) => {
     if (command.commandStatus === 'COMPLETED') {
+      let doorsLocked = match.extra.doorsLocked ? 'LOCKED' : 'UNLOCKED';
+      if (match.extra.doorsLocked === undefined) {
+        doorsLocked = 'ERROR';
+      }
+
       const alarmEnabled = match.extra.alarmEnabled ? 'SET' : 'NOTSET';
       let alarmValue = match.extra.alarmTriggered ? 'ACTIVE' : alarmEnabled;
       if (match.extra.alarmTriggered === undefined) {
@@ -1058,7 +1063,7 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/statusrefresh/:commandId', (req
       }
       response.vehicleStatus = {
         lockStatus: {
-          value: match.extra.doorsLocked ? 'LOCKED' : 'UNLOCKED',
+          value: doorsLocked,
           timestamp: match.extra.doorsLockedTimestamp,
         },
         alarm: {
@@ -1840,7 +1845,7 @@ app.post('/sim/alarm/:vehicleId', (req, res) => {
     res.statusCode = 200;
     return res.json({
       status: 'SUCCESS',
-      msg: `Alarm set to ${setting} successfully.`,
+      msg: `Alarm set to ${state} successfully.`,
     });
   }
 
