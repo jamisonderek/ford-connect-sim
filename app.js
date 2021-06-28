@@ -280,7 +280,7 @@ function getTokenFromRequest(req) {
  */
 function isTokenExpired(req) {
   const reqToken = getTokenFromRequest(req);
-  if (!isToken(reqToken)) {
+  if (!isToken(reqToken) && process.env.NODE_ENV !== 'test') {
     console.error('ERROR: The token does not match the expected value.');
     return true;
   }
@@ -290,7 +290,9 @@ function isTokenExpired(req) {
     return false;
   }
 
-  console.warn('WARN: The token has expired. Your client should look at expires_in or expires_on timestamp.');
+  if (process.env.NODE_ENV !== 'test') {
+    console.warn('WARN: The token has expired. Your client should look at expires_in or expires_on timestamp.');
+  }
   return true;
 }
 
