@@ -46,13 +46,21 @@ const path = require('path');
 const timestamp = require('./timestamp');
 const mockVehicles = require('./vehicles');
 
-const { toBoolean } = require('./convert');
+const { toBoolean, toFloat } = require('./convert');
+const { toDoor, toRole, toState } = require('./convert');
 const { toDirection } = require('./convert');
-const { toDoor } = require('./convert');
-const { toFloat } = require('./convert');
-const { toLower } = require('./convert');
-const { toRole } = require('./convert');
-const { toState } = require('./convert');
+
+const { makeGuid } = require('./guid');
+
+const { getAccessTokenTimeout, getCodeTimeout } = require('./timeout');
+
+const { getTokenFromRequest, isTokenExpired, isValidRefreshToken } = require('./token');
+const { generateToken } = require('./token');
+
+const { isValidMake, isValidYear } = require('./validate');
+const { isValidClientId, isValidClientSecret, isValidRedirectUri } = require('./validate');
+
+const { commands, createCommand, getCommand } = require('./command');
 
 const app = express();
 
@@ -81,29 +89,6 @@ function makeExtra(full, thumbnail) {
   };
 }
 
-/**
- * Generates a GUID.  This implementation does not use a secure random generator.
- *
- * Modified from https://www.arungudelli.com/tutorial/javascript/how-to-create-uuid-guid-in-javascript-with-examples/
- * @returns a new GUID.
- */
-function makeGuid() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    // eslint-disable-next-line no-bitwise
-    const r = Math.random() * 16 | 0;
-    // eslint-disable-next-line no-mixed-operators, no-bitwise
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
-
-// Duration that code & access token expire.
-const timeoutInSeconds = parseInt(process.env.FORDSIM_TIMEOUT, 10) || 20 * 60;
-const commandTimeoutInSeconds = parseInt(process.env.FORDSIM_CMDTIMEOUT, 10) || 120;
-console.log(`timeout for code and access tokens set to ${timeoutInSeconds} seconds.`);
-console.log(`timeout for commandIds set to ${commandTimeoutInSeconds} seconds.`);
-
-// REVIEW: Should we refactor this code into vehicles.js?
 const vehicles = [];
 vehicles.push({
   vehicle: mockVehicles.ice1,
@@ -131,19 +116,6 @@ if (vehicles.length < 1) {
   console.log(vehicles);
 }
 
-// Track all of the commandId that were created via POST calls.
-const commands = {
-  unlock: [],
-  lock: [],
-  startEngine: [],
-  stopEngine: [],
-  wake: [],
-  status: [],
-  location: [],
-  startCharge: [],
-  stopCharge: [],
-};
-
 const httpPort = parseInt(process.env.FORDSIM_HTTPPORT, 10) || 80;
 
 const httpServer = http.createServer(app);
@@ -159,66 +131,8 @@ app.use(formidable());
 
 // The code is only good until the codeExpireTimestamp.
 const code = process.env.FORDSIM_CODE || `Code${makeGuid()}`;
-const codeExpireTimestamp = Date.now() + timeoutInSeconds * 1000;
+const codeExpireTimestamp = Date.now() + getCodeTimeout() * 1000;
 console.log(`Code is: ${code}`);
-
-const tokens = [];
-
-/**
- * Generates a new token and adds it to the token list.
- * @param {*} tokenKey The key to use (if undefined then auto-generated key will be created.)
- * @param {*} isRefresh Boolean. true for refresh tokens.
- */
-function generateToken(tokenKey, isRefresh) {
-  if (tokenKey === undefined || tokenKey.length < 1) {
-    tokenKey = `${isRefresh ? 'REFRESH' : 'ACCESS'}-${makeGuid()}`;
-  }
-  const token = {
-    key: tokenKey,
-    isRefreshToken: !!(isRefresh),
-    expires: Date.now() + (isRefresh ? 90 * 86400 : timeoutInSeconds) * 1000, // 90 days for refresh
-  };
-  tokens.push(token);
-  console.info(`Issued token: ${tokenKey}`);
-  return token;
-}
-
-/**
- * Check if a value was a token.
- *
- * @param {*} tokenKey The key to search for.
- * @returns Boolean. true if the token was issued.
- */
-function isToken(tokenKey) {
-  return tokens.filter((t) => t.key === tokenKey
-    && !t.isRefreshToken).length > 0;
-}
-
-/**
- * Check if a token is still valid.
- *
- * @param {*} tokenKey The key to validate against.
- * @returns Boolean. true is the token is still valid.
- */
-function isValidToken(tokenKey) {
-  return tokens.filter((t) => t.key === tokenKey
-  && !t.isRefreshToken && Date.now() < t.expires).length !== 0;
-}
-
-/**
- * Check if a refresh token is still valid.
- *
- * @param {*} refreshTokenValue The key to validate against.
- * @returns Boolean. true is the refresh token is still valid.
- */
-function isValidRefreshToken(refreshTokenValue) {
-  return tokens.filter((t) => t.key === refreshTokenValue
-  && t.isRefreshToken && Date.now() < t.expires).length !== 0;
-}
-
-if (process.env.FORDSIM_TOKEN) {
-  generateToken(process.env.FORDSIM_TOKEN);
-}
 
 /**
  * Returns user controlled data for use in a JSON response.  In general, returning user controlled
@@ -242,50 +156,6 @@ function reflectedUserInput(value) {
  */
 function DeepCopy(item) {
   return JSON.parse(JSON.stringify(item));
-}
-
-/**
- * Returns the access token from the request.  The request should have an authorization header
- * that contains the text "Bearer " followed by the access token for the API.  This token should
- * have been obtained via a call to the /oauth2/v2.0/token route.
- *
- * @param {*} req The request object.
- * @returns The user provided token for accessing the API, or "AUTH-BEARER-NOT-PROVIDED".
- */
-function getTokenFromRequest(req) {
-  // eslint-disable-next-line dot-notation
-  let reqToken = req.headers['authorization'];
-  if (reqToken && reqToken.startsWith('Bearer ')) {
-    reqToken = reqToken.substring(7);
-  } else {
-    reqToken = 'AUTH-BEARER-NOT-PROVIDED';
-  }
-
-  return reqToken;
-}
-
-/**
- * Returns a boolean to indicate if the access token is expired.
- *
- * @param {*} req The request object.
- * @returns Returns true if the token is expired or invalid, otherwise false.
- */
-function isTokenExpired(req) {
-  const reqToken = getTokenFromRequest(req);
-  if (!isToken(reqToken) && process.env.NODE_ENV !== 'test') {
-    console.error('ERROR: The token does not match the expected value.');
-    return true;
-  }
-
-  if (isValidToken(reqToken)) {
-    // This should be the typical case, since client shouldn't use expired tokens.
-    return false;
-  }
-
-  if (process.env.NODE_ENV !== 'test') {
-    console.warn('WARN: The token has expired. Your client should look at expires_in or expires_on timestamp.');
-  }
-  return true;
 }
 
 /**
@@ -486,71 +356,15 @@ function sendRefreshTokenResponse(req, res) {
     id_token: 'eyJAAA==', // Stub - we don't use this.
     token_type: 'Bearer',
     not_before: Math.trunc(now / 1000),
-    expires_in: timeoutInSeconds,
+    expires_in: getAccessTokenTimeout(),
     expires_on: Math.trunc(token.expires / 1000),
     resource: 'c1e4c1a0-2878-4e6f-a308-836b34474ea9',
-    id_token_expires_in: timeoutInSeconds,
+    id_token_expires_in: getAccessTokenTimeout(),
     profile_info: 'ejyAAA==', // Stub - we don't use this.
     scope: 'https://simulated-environment.onmicrosoft.com/fordconnect/access openid offline_access',
     refresh_token: refreshToken.key,
     refresh_token_expires_in: 7776000, // 90 days.
   });
-}
-
-/**
- * Validates the client_id parameter is the expected value.
- * @param {*} clientIdValue The value to validate.
- * @returns Boolean. Returns true if the parameter was a valid value, otherwise false.
- */
-function isValidClientId(clientIdValue) {
-  // SECURITY: Replace with stronger client id.  :)
-  const clientIdPrefix = '3';
-  return clientIdValue && clientIdValue.startsWith(clientIdPrefix);
-}
-
-/**
- * Validates the client_secret parameter is the expected value.
- * @param {*} clientSecretValue The value to validate.
- * @returns Boolean. Returns true if the parameter was a valid value, otherwise false.
- */
-function isValidClientSecret(clientSecretValue) {
-  // SECURITY: Replace with stronger client secret.  :)
-  const clientSecretPrefix = 'T';
-  return clientSecretValue && clientSecretValue.startsWith(clientSecretPrefix);
-}
-
-/**
- * Validates the redirect_uri parameter is the expected value.
- * @param {*} redirectUriValue The value to validate.
- * @returns Boolean. Returns true if the parameter was a valid value, otherwise false.
- */
-function isValidRedirectUri(redirectUriValue) {
-  // SECURITY: Replace with uri validation rules.
-  return redirectUriValue && toLower(redirectUriValue).startsWith('http');
-}
-
-/**
- * Validate the make parameter is an expected value.
- * @param {*} makeValue The value to validate.
- * @returns Boolean. Returns true if the parameter was a valid value, otherwise false.
- */
-function isValidMake(makeValue) {
-  if (makeValue === undefined) {
-    return false;
-  }
-
-  makeValue = toLower(makeValue);
-  return makeValue === 'f' || makeValue === 'ford' || makeValue === 'l' || makeValue === 'lincoln';
-}
-
-/**
- * Validate the year parameter is in the expected range.
- * @param {*} yearValue The value to validate.
- * @returns Boolean. Returns true if the parameter was a valid value, otherwise false.
- */
-function isValidYear(yearValue) {
-  const year = parseInt(yearValue, 10);
-  return year >= 2010;
 }
 
 /**
@@ -583,56 +397,6 @@ function getVehicleOrSendError(req, res) {
   }
 
   return matches[0];
-}
-
-/**
- * Returns the command object that matches the request, or undefined if not found.
- * @param {*} req The request object.
- * @param {*} commandArray An array of command objects.
- * @returns The command object that matches the query parameters (commandId, vehicleId).
- */
-function getCommand(req, commandArray) {
-  let { commandId } = req.params;
-  let { vehicleId } = req.params;
-  commandId = toLower(commandId); // FordConnect server is case-insensitive.
-  vehicleId = toLower(vehicleId);
-
-  let searchLists = (commandArray !== undefined) ? { data: commandArray } : commands;
-
-  // BUGFIX: FordConnect API returns matching commandId regardless of the route used.
-  searchLists = commands;
-
-  let match;
-  Object.keys(searchLists).forEach((searchList) => {
-    const matches = searchLists[searchList].filter(
-      (c) => c.commandId === commandId && c.vehicleId === vehicleId,
-    );
-
-    if (matches && matches.length > 0) {
-      // eslint-disable-next-line prefer-destructuring
-      match = matches[0];
-      if (Date.now() - match.timestamp > commandTimeoutInSeconds * 1000) {
-        match = undefined;
-      }
-    }
-  });
-
-  return match;
-}
-
-/**
- * Returns a new command object (4 seconds of "PENDINGRESPONSE", then "COMPLETED")
- * @param {*} vehicleId The vehicleId for the command.
- * @returns A command object with a random commandId.
- */
-function createCommand(vehicleId) {
-  return {
-    commandId: makeGuid(),
-    vehicleId: toLower(vehicleId),
-    timestamp: Date.now(),
-    commandStatuses: '4000,PENDINGRESPONSE;-1,COMPLETED',
-    commandStatus: 'PENDINGRESPONSE', // possible values: PENDINGRESPONSE, COMPLETED, FAILED
-  };
 }
 
 app.post('/oauth2/v2.0/token', (req, res) => {
@@ -1747,8 +1511,10 @@ app.use((req, res) => {
   res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
 });
 
+/*
 exports.commands = commands;
 exports.createCommand = createCommand;
 exports.generateToken = generateToken;
+*/
 exports.server = app;
 exports.vehicleData = vehicles;

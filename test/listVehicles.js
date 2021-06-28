@@ -12,8 +12,8 @@ const should = chai.should();
 const { expect } = chai;
 
 const { server } = app;
-const { generateToken } = app;
 const { vehicleData } = app;
+const { generateToken } = require('../token');
 
 chai.use(chaiHttp);
 
