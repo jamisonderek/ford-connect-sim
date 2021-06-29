@@ -202,13 +202,13 @@ describe('Status tests', () => {
         const cmd = createCommand(anyVehicleId);
         commands.status.push(cmd);
         const url = `/api/fordconnect/vehicles/v1/${anyVehicleId}/statusrefresh/${cmd.commandId}`;
-        it('it should return HTTP 200 status code', (done) => {
+        it('it should return HTTP 202 status code', (done) => {
           chai.request(server)
             .get(url)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
-              res.should.have.status(200);
+              res.should.have.status(202);
               done();
             });
         });
@@ -338,13 +338,13 @@ describe('Status tests', () => {
         cmd.timestamp -= 30 * 1000; // 30 seconds later.
         commands.status.push(cmd);
         const url = `/api/fordconnect/vehicles/v1/${anyVehicleId}/statusrefresh/${cmd.commandId}`;
-        it('it should return HTTP 200 status code', (done) => {
+        it('it should return HTTP 202 status code', (done) => {
           chai.request(server)
             .get(url)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
-              res.should.have.status(200);
+              res.should.have.status(202);
               done();
             });
         });

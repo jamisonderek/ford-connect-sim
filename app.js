@@ -487,9 +487,10 @@ function vehicleIdPostMethod(req, res, requiresEv, fn) {
  * @param {*} res THe response object.
  * @param {*} commandArray An array of command objects, or undefinded to use all command objects.
  * @param {*} fn Callback function(req, res, matchedVehicle, commandObject).
+ * @param {*} successCode The HTTP code to return on success.
  * @returns The res.json result, or undefined in some error cases.
  */
-function vehicleIdGetCommandStatus(req, res, commandArray, fn) {
+function vehicleIdGetCommandStatus(req, res, commandArray, fn, successCode) {
   if (isTokenExpired(req)) {
     return sendTokenExpiredJson(req, res);
   }
@@ -523,7 +524,7 @@ function vehicleIdGetCommandStatus(req, res, commandArray, fn) {
     // Invoke the callback function, with the matching vehicle and command object.
     fn(req, res, match, command, response);
 
-    res.statusCode = 200;
+    res.statusCode = (successCode === undefined) ? 200 : successCode;
     res.setHeader('Vehicleid', match.vehicle.vehicleId);
     return res.json(response);
   }
@@ -828,7 +829,7 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/statusrefresh/:commandId', (req
         },
       };
     }
-  });
+  }, 202);
 });
 
 app.get('/api/fordconnect/vehicles/v1/:vehicleId', (req, res) => {
@@ -1511,10 +1512,5 @@ app.use((req, res) => {
   res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
 });
 
-/*
-exports.commands = commands;
-exports.createCommand = createCommand;
-exports.generateToken = generateToken;
-*/
 exports.server = app;
 exports.vehicleData = vehicles;
