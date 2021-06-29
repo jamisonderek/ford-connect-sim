@@ -110,7 +110,9 @@ NOTE: At some point you will want to swtich back to using the FordConnect API, y
 |verb|route|Postman Name|
 |----|-----|------------|
 POST|/oauth2/v2.0/token (grant_type=authorization_code)|Ford Get Token
+POST|/:guid/oauth2/v2.0/token (grant_type=authorization_code)|Ford Get Token
 POST|/oauth2/v2.0/token (grant_type=refresh_token)|Ford Get Refresh Token
+POST|/:guid/oauth2/v2.0/token (grant_type=refresh_token)|Ford Get Refresh Token
 GET|api/fordconnect/vehicles/v1||Get Vehicle List
 POST|api/fordconnect/vehicles/v1/:vehicleId/unlock|Unlock Vehicle
 GET|api/fordconnect/vehicles/v1/:vehicleId/unlock/:unlockCommandId|Unlock Command Status

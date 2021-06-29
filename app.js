@@ -399,7 +399,7 @@ function getVehicleOrSendError(req, res) {
   return matches[0];
 }
 
-app.post('/oauth2/v2.0/token', (req, res) => {
+function oauth(req,res) {
   let msg = '';
 
   if (!isValidClientId(req.fields['client_id'])) {
@@ -430,7 +430,10 @@ app.post('/oauth2/v2.0/token', (req, res) => {
 
   console.error(msg);
   return res.json({ error: 'invalid request', error_description: msg });
-});
+}
+
+app.post('/oauth2/v2.0/token', (req, res) => oauth(req, res));
+app.post('/:guid/oauth2/v2.0/token', (req, res) => oauth(req, res));
 
 app.get('/api/fordconnect/vehicles/v1', (req, res) => {
   if (isTokenExpired(req)) {
