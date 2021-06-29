@@ -136,7 +136,8 @@ GET|api/fordconnect/vehicles/v1/:vehicleId/images/thumbnail|Get Vehicle Image Th
 GET|api/fordconnect/vehicles/v1/:vehicleId/images/full|Get image Full
 
 ## Changing simulation data
-For more information about the simulation routes, please look in app.js file, search for your route name, like "('/sim/today" (without the quotes).  The comments should show more information about the parameters.
+For more information about the simulation routes, please look in app.js file, search for your route name, like "('/sim/today" (without the quotes).  The comments should show more information about the parameters.<br/>
+**NOTE:** You can import "simulator.json" into Postman for example usage of these routes. 
 
 |route|params (*=optional)|example|comments|
 |-----|------|-------|-------|

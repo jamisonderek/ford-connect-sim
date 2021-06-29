@@ -1,0 +1,938 @@
+{
+	"info": {
+		"_postman_id": "cf6b885c-acce-469d-a0d0-7ab195543d3c",
+		"name": "Ford-Connect-Sim",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Simulator API",
+			"item": [
+				{
+					"name": "Today is Friday 1:15PM (impacts departure time)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/today?day=FRIDAY&time=13:15",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"today"
+							],
+							"query": [
+								{
+									"key": "day",
+									"value": "FRIDAY"
+								},
+								{
+									"key": "time",
+									"value": "13:15"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Today is TUESDAY 6:00AM (impacts departure time)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/today?day=TUESDAY&time=06:00",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"today"
+							],
+							"query": [
+								{
+									"key": "day",
+									"value": "TUESDAY"
+								},
+								{
+									"key": "time",
+									"value": "06:00"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Tires good (PSI)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/psi/{{vehicleId}}?warning=false",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"psi",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "warning",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Flat tire (PSI)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/psi/{{vehicleId}}?warning=true",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"psi",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "warning",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Disable modem",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/modem/{{vehicleId}}?enabled=false",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"modem",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "enabled",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enable modem",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/modem/{{vehicleId}}?enabled=true",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"modem",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "enabled",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Firmware upgrade in progress",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/firmware/{{vehicleId}}?upgrade=true",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"firmware",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "upgrade",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Firmware up-to-date",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/firmware/{{vehicleId}}?upgrade=false",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"firmware",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "upgrade",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deep sleep",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/deepsleep/{{vehicleId}}?sleep=true",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"deepsleep",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "sleep",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Not deep sleep",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/deepsleep/{{vehicleId}}?sleep=false",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"deepsleep",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "sleep",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "EV plug connected",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/plug/{{vehicleId}}?connected=true",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"plug",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "connected",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "EV plug disconnected",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/plug/{{vehicleId}}?connected=false",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"plug",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "connected",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ignition is on",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/ignition/{{vehicleId}}?value=on",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"ignition",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "value",
+									"value": "on"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ignition is off",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/ignition/{{vehicleId}}?value=off",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"ignition",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "value",
+									"value": "off"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Full tank fuel",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/fuel/{{vehicleId}}?level=100.0&dte=700.0",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"fuel",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "level",
+									"value": "100.0"
+								},
+								{
+									"key": "dte",
+									"value": "700.0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Half tank fuel",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/fuel/{{vehicleId}}?level=50.0&dte=350.0",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"fuel",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "level",
+									"value": "50.0"
+								},
+								{
+									"key": "dte",
+									"value": "350.0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1/8 tank fuel",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/fuel/{{vehicleId}}?level=12.5&dte=80.0",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"fuel",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "level",
+									"value": "12.5"
+								},
+								{
+									"key": "dte",
+									"value": "80.0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "empty tank fuel",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/fuel/{{vehicleId}}?level=0&dte=0.0",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"fuel",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "level",
+									"value": "0"
+								},
+								{
+									"key": "dte",
+									"value": "0.0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Full EV battery",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/battery/{{vehicleId}}?level=100.0&dte=400.0",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"battery",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "level",
+									"value": "100.0"
+								},
+								{
+									"key": "dte",
+									"value": "400.0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "80% EV battery",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/battery/{{vehicleId}}?level=80.0&dte=320.0",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"battery",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "level",
+									"value": "80.0"
+								},
+								{
+									"key": "dte",
+									"value": "320.0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "50% EV battery",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/battery/{{vehicleId}}?level=50.0&dte=200.0",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"battery",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "level",
+									"value": "50.0"
+								},
+								{
+									"key": "dte",
+									"value": "200.0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5% EV battery",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/battery/{{vehicleId}}?level=5.0&dte=20.0",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"battery",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "level",
+									"value": "5.0"
+								},
+								{
+									"key": "dte",
+									"value": "20.0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Driver door open",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/door/{{vehicleId}}?door=UNSPECIFIED_FRONT&role=DRIVER&state=OPEN",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"door",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "door",
+									"value": "UNSPECIFIED_FRONT"
+								},
+								{
+									"key": "role",
+									"value": "DRIVER"
+								},
+								{
+									"key": "state",
+									"value": "OPEN"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Driver door closed",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/door/{{vehicleId}}?door=UNSPECIFIED_FRONT&role=DRIVER&state=CLOSED",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"door",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "door",
+									"value": "UNSPECIFIED_FRONT"
+								},
+								{
+									"key": "role",
+									"value": "DRIVER"
+								},
+								{
+									"key": "state",
+									"value": "CLOSED"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Front passenger door open",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/door/{{vehicleId}}?door=UNSPECIFIED_FRONT&role=PASSENGER&state=OPEN",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"door",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "door",
+									"value": "UNSPECIFIED_FRONT"
+								},
+								{
+									"key": "role",
+									"value": "PASSENGER"
+								},
+								{
+									"key": "state",
+									"value": "OPEN"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Front passenger door closed",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/door/{{vehicleId}}?door=UNSPECIFIED_FRONT&role=PASSENGER&state=CLOSED",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"door",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "door",
+									"value": "UNSPECIFIED_FRONT"
+								},
+								{
+									"key": "role",
+									"value": "PASSENGER"
+								},
+								{
+									"key": "state",
+									"value": "CLOSED"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Alarm disabled",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/alarm/{{vehicleId}}?state=disabled",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"alarm",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "state",
+									"value": "disabled"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Alarm enabled",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/alarm/{{vehicleId}}?state=enabled",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"alarm",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "state",
+									"value": "enabled"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Alarm going off!",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/alarm/{{vehicleId}}?state=triggered",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"alarm",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "state",
+									"value": "triggered"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Location - 3905 S Memorial Dr",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/location/{{vehicleId}}?lat=36.105539&long=-95.885703&distance=3.1",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"location",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "lat",
+									"value": "36.105539"
+								},
+								{
+									"key": "long",
+									"value": "-95.885703"
+								},
+								{
+									"key": "distance",
+									"value": "3.1"
+								},
+								{
+									"key": "speed",
+									"value": "20",
+									"disabled": true
+								},
+								{
+									"key": "direction",
+									"value": "NorthWest",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Location - 2010 N Memorial Dr",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/location/{{vehicleId}}?lat=36.183432&long=-95.887811&distance=5.0",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"location",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "lat",
+									"value": "36.183432"
+								},
+								{
+									"key": "long",
+									"value": "-95.887811"
+								},
+								{
+									"key": "distance",
+									"value": "5.0"
+								},
+								{
+									"key": "speed",
+									"value": "20",
+									"disabled": true
+								},
+								{
+									"key": "direction",
+									"value": "NorthWest",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Location - Fowler Ford",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/location/{{vehicleId}}?lat=36.113430&long=-95.905260&distance=1.0",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"location",
+								"{{vehicleId}}"
+							],
+							"query": [
+								{
+									"key": "lat",
+									"value": "36.113430"
+								},
+								{
+									"key": "long",
+									"value": "-95.905260"
+								},
+								{
+									"key": "distance",
+									"value": "1.0"
+								},
+								{
+									"key": "speed",
+									"value": "20",
+									"disabled": true
+								},
+								{
+									"key": "direction",
+									"value": "NorthWest",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
