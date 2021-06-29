@@ -821,7 +821,7 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/statusrefresh/:commandId', (req
       if (match.extra.alarmTriggered === undefined) {
         alarmValue = 'ERROR';
       }
-      response.vehicleStatus = {
+      response.vehiclestatus = {
         lockStatus: {
           value: doorsLocked,
           timestamp: match.extra.doorsLockedTimestamp,

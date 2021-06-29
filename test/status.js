@@ -378,7 +378,7 @@ describe('Status tests', () => {
               done();
             });
         });
-        it('it should return vehicleStatus with lockStatus value of LOCKED when locked', (done) => {
+        it('it should return vehiclestatus with lockStatus value of LOCKED when locked', (done) => {
           const vehicle = vehicleData.filter((v) => v.vehicle.vehicleId === anyVehicleId)[0];
           vehicle.extra.doorsLocked = true;
           vehicle.extra.doorsLockedTimestamp = timestamp.now();
@@ -387,11 +387,11 @@ describe('Status tests', () => {
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
-              expect(res.body.vehicleStatus.lockStatus.value).to.equal('LOCKED');
+              expect(res.body.vehiclestatus.lockStatus.value).to.equal('LOCKED');
               done();
             });
         });
-        it('it should return vehicleStatus with lockStatus value of UNLOCKED when not locked', (done) => {
+        it('it should return vehiclestatus with lockStatus value of UNLOCKED when not locked', (done) => {
           const vehicle = vehicleData.filter((v) => v.vehicle.vehicleId === anyVehicleId)[0];
           vehicle.extra.doorsLocked = false;
           vehicle.extra.doorsLockedTimestamp = timestamp.now();
@@ -400,11 +400,11 @@ describe('Status tests', () => {
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
-              expect(res.body.vehicleStatus.lockStatus.value).to.equal('UNLOCKED');
+              expect(res.body.vehiclestatus.lockStatus.value).to.equal('UNLOCKED');
               done();
             });
         });
-        it('it should return vehicleStatus with lockStatus value of ERROR when undefined state', (done) => {
+        it('it should return vehiclestatus with lockStatus value of ERROR when undefined state', (done) => {
           const vehicle = vehicleData.filter((v) => v.vehicle.vehicleId === anyVehicleId)[0];
           vehicle.extra.doorsLocked = undefined;
           vehicle.extra.doorsLockedTimestamp = timestamp.now();
@@ -413,11 +413,11 @@ describe('Status tests', () => {
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
-              expect(res.body.vehicleStatus.lockStatus.value).to.equal('ERROR');
+              expect(res.body.vehiclestatus.lockStatus.value).to.equal('ERROR');
               done();
             });
         });
-        it('it should return vehicleStatus with lockStatus timestamp of when locked', (done) => {
+        it('it should return vehiclestatus with lockStatus timestamp of when locked', (done) => {
           const ts = timestamp.now();
           const vehicle = vehicleData.filter((v) => v.vehicle.vehicleId === anyVehicleId)[0];
           vehicle.extra.doorsLocked = true;
@@ -427,11 +427,11 @@ describe('Status tests', () => {
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
-              expect(res.body.vehicleStatus.lockStatus.timestamp).to.equal(ts);
+              expect(res.body.vehiclestatus.lockStatus.timestamp).to.equal(ts);
               done();
             });
         });
-        it('it should return vehicleStatus with alarm value of ACTIVE when alarm is going off', (done) => {
+        it('it should return vehiclestatus with alarm value of ACTIVE when alarm is going off', (done) => {
           const vehicle = vehicleData.filter((v) => v.vehicle.vehicleId === anyVehicleId)[0];
           vehicle.extra.alarmEnabled = true;
           vehicle.extra.alarmTriggered = true;
@@ -441,11 +441,11 @@ describe('Status tests', () => {
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
-              expect(res.body.vehicleStatus.alarm.value).to.equal('ACTIVE');
+              expect(res.body.vehiclestatus.alarm.value).to.equal('ACTIVE');
               done();
             });
         });
-        it('it should return vehicleStatus with alarm value of SET when alarm is enabled', (done) => {
+        it('it should return vehiclestatus with alarm value of SET when alarm is enabled', (done) => {
           const vehicle = vehicleData.filter((v) => v.vehicle.vehicleId === anyVehicleId)[0];
           vehicle.extra.alarmEnabled = true;
           vehicle.extra.alarmTriggered = false;
@@ -455,11 +455,11 @@ describe('Status tests', () => {
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
-              expect(res.body.vehicleStatus.alarm.value).to.equal('SET');
+              expect(res.body.vehiclestatus.alarm.value).to.equal('SET');
               done();
             });
         });
-        it('it should return vehicleStatus with alarm value of NOTSET when alarm is not enabled', (done) => {
+        it('it should return vehiclestatus with alarm value of NOTSET when alarm is not enabled', (done) => {
           const vehicle = vehicleData.filter((v) => v.vehicle.vehicleId === anyVehicleId)[0];
           vehicle.extra.alarmEnabled = false;
           vehicle.extra.alarmTriggered = false;
@@ -469,11 +469,11 @@ describe('Status tests', () => {
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
-              expect(res.body.vehicleStatus.alarm.value).to.equal('NOTSET');
+              expect(res.body.vehiclestatus.alarm.value).to.equal('NOTSET');
               done();
             });
         });
-        it('it should return vehicleStatus with alarm value of ERROR when alarm is undefined', (done) => {
+        it('it should return vehiclestatus with alarm value of ERROR when alarm is undefined', (done) => {
           const vehicle = vehicleData.filter((v) => v.vehicle.vehicleId === anyVehicleId)[0];
           vehicle.extra.alarmEnabled = undefined;
           vehicle.extra.alarmTriggered = undefined;
@@ -483,11 +483,11 @@ describe('Status tests', () => {
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
-              expect(res.body.vehicleStatus.alarm.value).to.equal('ERROR');
+              expect(res.body.vehiclestatus.alarm.value).to.equal('ERROR');
               done();
             });
         });
-        it('it should return vehicleStatus with alarm timestamp of when alarm enabled', (done) => {
+        it('it should return vehiclestatus with alarm timestamp of when alarm enabled', (done) => {
           const ts = timestamp.now();
           const vehicle = vehicleData.filter((v) => v.vehicle.vehicleId === anyVehicleId)[0];
           vehicle.extra.alarmEnabled = true;
@@ -498,7 +498,7 @@ describe('Status tests', () => {
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
-              expect(res.body.vehicleStatus.alarm.timestamp).to.equal(ts);
+              expect(res.body.vehiclestatus.alarm.timestamp).to.equal(ts);
               done();
             });
         });
