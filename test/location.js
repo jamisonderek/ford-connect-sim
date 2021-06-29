@@ -230,7 +230,7 @@ describe('Location tests', () => {
             expect(actual.longitude).to.equal(expectedGps.longitude, 'longitude');
             expect(actual.latitude).to.equal(expectedGps.latitude, 'latitude');
             expect(actual.speed).to.equal(expectedGps.speed, 'speed');
-            expect(actual.direction).to.equal(expectedGps.direction, 'direction');
+            expect(actual.direction).to.equal(expectedGps.direction.toUpperCase(), 'direction');
             expect(actual.timeStamp).to.equal(expectedGps.timeStamp, 'timeStamp');
             done();
           });

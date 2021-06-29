@@ -877,6 +877,7 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/location', (req, res) => {
         status: 'SUCCESS',
         vehicleLocation: DeepCopy(match.info.vehicleStatus.vehicleLocation),
       };
+      location.vehicleLocation.direction = location.vehicleLocation.direction.toUpperCase();
       res.setHeader('Vehicleid', match.vehicle.vehicleId);
       return res.json(location);
     }
