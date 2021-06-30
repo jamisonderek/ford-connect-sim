@@ -186,7 +186,110 @@ describe('Get vehicle info tests', () => {
             done();
           });
       });
-      // TODO: VehicleStatus checks...
+      it('it should return tirePressure', (done) => {
+        chai.request(server)
+          .get(url)
+          .set('Application-Id', applicationId)
+          .auth(authToken, { type: 'bearer' })
+          .send()
+          .end((err, res) => {
+            expect(res.body.vehicle.vehicleStatus.tirePressureWarning).to.equal(mockVehicles.ev1_info.vehicleStatus.tirePressureWarning);
+            done();
+          });
+      });
+      it('it should return deepSleepInProgress', (done) => {
+        chai.request(server)
+          .get(url)
+          .set('Application-Id', applicationId)
+          .auth(authToken, { type: 'bearer' })
+          .send()
+          .end((err, res) => {
+            expect(res.body.vehicle.vehicleStatus.deepSleepInProgress).to.equal(mockVehicles.ev1_info.vehicleStatus.deepSleepInProgress);
+            done();
+          });
+      });
+      it('it should return firmwareUpgradeInProgress', (done) => {
+        chai.request(server)
+          .get(url)
+          .set('Application-Id', applicationId)
+          .auth(authToken, { type: 'bearer' })
+          .send()
+          .end((err, res) => {
+            expect(res.body.vehicle.vehicleStatus.firmwareUpgradeInProgress).to.equal(mockVehicles.ev1_info.vehicleStatus.firmwareUpgradeInProgress);
+            done();
+          });
+      });
+      it('it should return remoteStartStatus', (done) => {
+        chai.request(server)
+          .get(url)
+          .set('Application-Id', applicationId)
+          .auth(authToken, { type: 'bearer' })
+          .send()
+          .end((err, res) => {
+            expect(res.body.vehicle.vehicleStatus.remoteStartStatus.status).to.equal(mockVehicles.ev1_info.vehicleStatus.remoteStartStatus.status);
+            expect(res.body.vehicle.vehicleStatus.remoteStartStatus.duration).to.equal(mockVehicles.ev1_info.vehicleStatus.remoteStartStatus.duration);
+            expect(res.body.vehicle.vehicleStatus.remoteStartStatus.timeStamp).to.equal(mockVehicles.ev1_info.vehicleStatus.remoteStartStatus.timeStamp);
+            done();
+          });
+      });
+      it('it should return chargingStatus', (done) => {
+        chai.request(server)
+          .get(url)
+          .set('Application-Id', applicationId)
+          .auth(authToken, { type: 'bearer' })
+          .send()
+          .end((err, res) => {
+            expect(res.body.vehicle.vehicleStatus.chargingStatus.value).to.equal(mockVehicles.ev1_info.vehicleStatus.chargingStatus.value);
+            expect(res.body.vehicle.vehicleStatus.chargingStatus.timeStamp).to.equal(mockVehicles.ev1_info.vehicleStatus.chargingStatus.timeStamp);
+            expect(res.body.vehicle.vehicleStatus.chargingStatus.chargeStartTime).to.equal(mockVehicles.ev1_info.vehicleStatus.chargingStatus.chargeStartTime);
+            expect(res.body.vehicle.vehicleStatus.chargingStatus.chargeEndTime).to.equal(mockVehicles.ev1_info.vehicleStatus.chargingStatus.chargeEndTime);
+            done();
+          });
+      });
+      it('it should return plugStatus', (done) => {
+        chai.request(server)
+          .get(url)
+          .set('Application-Id', applicationId)
+          .auth(authToken, { type: 'bearer' })
+          .send()
+          .end((err, res) => {
+            expect(res.body.vehicle.vehicleStatus.plugStatus.value).to.equal(mockVehicles.ev1_info.vehicleStatus.plugStatus.value);
+            expect(res.body.vehicle.vehicleStatus.plugStatus.timeStamp).to.equal(mockVehicles.ev1_info.vehicleStatus.plugStatus.timeStamp);
+            done();
+          });
+      });
+      it('it should return ignitionStatus', (done) => {
+        chai.request(server)
+          .get(url)
+          .set('Application-Id', applicationId)
+          .auth(authToken, { type: 'bearer' })
+          .send()
+          .end((err, res) => {
+            expect(res.body.vehicle.vehicleStatus.ignitionStatus.value).to.equal(mockVehicles.ev1_info.vehicleStatus.ignitionStatus.value);
+            expect(res.body.vehicle.vehicleStatus.ignitionStatus.timeStamp).to.equal(mockVehicles.ev1_info.vehicleStatus.ignitionStatus.timeStamp);
+            done();
+          });
+      });
+      it('it should return doorStatus', (done) => {
+        chai.request(server)
+          .get(url)
+          .set('Application-Id', applicationId)
+          .auth(authToken, { type: 'bearer' })
+          .send()
+          .end((err, res) => {
+            expect(res.body.vehicle.vehicleStatus.doorStatus.length).to.equal(mockVehicles.ev1_info.vehicleStatus.doorStatus.length);
+            for (let i = 0; i < res.body.vehicle.vehicleStatus.doorStatus.length; i += 1) {
+              const actualDoor = res.body.vehicle.vehicleStatus.doorStatus[i];
+              const expectDoor = mockVehicles.ev1_info.vehicleStatus.doorStatus[i];
+              // TODO: We don't really care about order, so we should fix test to not break if items are reordered.
+              expect(actualDoor.vehicleDoor).to.equal(expectDoor.vehicleDoor);
+              expect(actualDoor.value).to.equal(expectDoor.value);
+              expect(actualDoor.vehicleOccupantRole).to.equal(expectDoor.vehicleOccupantRole);
+              expect(actualDoor.timeStamp).to.equal(expectDoor.timeStamp);
+            }
+            done();
+          });
+      });
     });
     describe('with bad application-id', () => {
       const anyVehicleId = mockVehicles.ev1.vehicleId;
