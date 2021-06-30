@@ -13,11 +13,11 @@ const { expect } = chai;
 
 const { server } = app;
 const { vehicleData } = app;
-const { generateToken } = require('../token');
+const { generateToken, applicationId } = require('../token');
 
 chai.use(chaiHttp);
 
-describe('Unlock tests', () => {
+describe('List vehicles tests', () => {
   const authToken = generateToken().key;
   beforeEach((done) => {
     done();
@@ -29,6 +29,7 @@ describe('Unlock tests', () => {
       it('it should return HTTP 401 status code', (done) => {
         chai.request(server)
           .get(url)
+          .set('Application-Id', applicationId)
           .auth(invalidAuthToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -39,6 +40,7 @@ describe('Unlock tests', () => {
       it('it should return body error of invalid_token', (done) => {
         chai.request(server)
           .get(url)
+          .set('Application-Id', applicationId)
           .auth(invalidAuthToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -52,6 +54,7 @@ describe('Unlock tests', () => {
       it('it should return HTTP 200 status code', (done) => {
         chai.request(server)
           .get(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -62,6 +65,7 @@ describe('Unlock tests', () => {
       it('it should return body status of SUCCESS', (done) => {
         chai.request(server)
           .get(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -72,6 +76,7 @@ describe('Unlock tests', () => {
       it('it should return body vehicles as an array', (done) => {
         chai.request(server)
           .get(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -82,6 +87,7 @@ describe('Unlock tests', () => {
       it('it should return body vehicles with length matching mocked vehicles', (done) => {
         chai.request(server)
           .get(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -92,6 +98,7 @@ describe('Unlock tests', () => {
       it('it should return body vehicles matching the mocks', (done) => {
         chai.request(server)
           .get(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -114,6 +121,79 @@ describe('Unlock tests', () => {
               expect(actual.vehicleAuthorizationIndicator).to.equal(expected.vehicleAuthorizationIndicator);
               expect(actual.serviceCompatible).to.equal(expected.serviceCompatible);
             }
+            done();
+          });
+      });
+    });
+    describe('with bad application-id', () => {
+      const url = '/api/fordconnect/vehicles/v1';
+      it('it should return HTTP 401 status code', (done) => {
+        chai.request(server)
+          .get(url)
+          //.set('Application-Id', applicationId)
+          .auth(authToken, { type: 'bearer' })
+          .send()
+          .end((err, res) => {
+            res.should.have.status(401);
+            done();
+          });
+      });
+      it('it should return body statusCode of 401', (done) => {
+        chai.request(server)
+          .get(url)
+          //.set('Application-Id', applicationId)
+          .auth(authToken, { type: 'bearer' })
+          .send()
+          .end((err, res) => {
+            expect(res.body.statusCode).to.equal(401);
+            done();
+          });
+      });
+      it('it should return body message of "missing subscription key"', (done) => {
+        chai.request(server)
+          .get(url)
+          //.set('Application-Id', applicationId)
+          .auth(authToken, { type: 'bearer' })
+          .send()
+          .end((err, res) => {
+            expect(res.body.message).to.contain('missing subscription key');
+            done();
+          });
+      });
+    });
+    describe('with missing application-id', () => {
+      const url = '/api/fordconnect/vehicles/v1';
+      const invalidAppId = 'INVALID-APP-ID';
+      it('it should return HTTP 401 status code', (done) => {
+        chai.request(server)
+          .get(url)
+          .set('Application-Id', invalidAppId)
+          .auth(authToken, { type: 'bearer' })
+          .send()
+          .end((err, res) => {
+            res.should.have.status(401);
+            done();
+          });
+      });
+      it('it should return body statusCode of 401', (done) => {
+        chai.request(server)
+          .get(url)
+          .set('Application-Id', invalidAppId)
+          .auth(authToken, { type: 'bearer' })
+          .send()
+          .end((err, res) => {
+            expect(res.body.statusCode).to.equal(401);
+            done();
+          });
+      });
+      it('it should return body message of "invalid subscription key"', (done) => {
+        chai.request(server)
+          .get(url)
+          .set('Application-Id', invalidAppId)
+          .auth(authToken, { type: 'bearer' })
+          .send()
+          .end((err, res) => {
+            expect(res.body.message).to.contain('invalid subscription key');
             done();
           });
       });

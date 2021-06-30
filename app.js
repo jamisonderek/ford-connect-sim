@@ -55,7 +55,7 @@ const { makeGuid } = require('./guid');
 const { getAccessTokenTimeout, getCodeTimeout } = require('./timeout');
 
 const { getTokenFromRequest, isTokenExpired, isValidRefreshToken } = require('./token');
-const { generateToken } = require('./token');
+const { generateToken, isValidApplicationId } = require('./token');
 
 const { isValidMake, isValidYear } = require('./validate');
 const { isValidClientId, isValidClientSecret, isValidRedirectUri } = require('./validate');
@@ -199,6 +199,22 @@ function sendBadYearParameter(req, res) {
   return res.json({
     errorCode: '400',
     errorMessage: 'Invalid year parameter.  Must be four digit format (like 2019).',
+  });
+}
+
+/**
+ * Sends an HTTP 401 response that the applicationId is not valid.
+ * @param {*} req The request object.
+ * @param {*} res The response object.
+ * @returns The res.json result.
+ */
+function sendInvalidApplicationId(req, res) {
+  const appId = req.headers['application-id'];
+  res.statusCode = 401;
+  const message = `Access denied due to ${appId === undefined ? 'missing' : 'invalid' } subscription key.`;
+  return res.json({
+    statusCode: 401,
+    message,
   });
 }
 
@@ -436,6 +452,10 @@ app.post('/oauth2/v2.0/token', (req, res) => oauth(req, res));
 app.post('/:guid/oauth2/v2.0/token', (req, res) => oauth(req, res));
 
 app.get('/api/fordconnect/vehicles/v1', (req, res) => {
+  if (!isValidApplicationId(req)) {
+    return sendInvalidApplicationId(req, res);
+  }
+
   if (isTokenExpired(req)) {
     return sendTokenExpiredJson(req, res);
   }
@@ -454,6 +474,10 @@ app.get('/api/fordconnect/vehicles/v1', (req, res) => {
  * @returns The res.json result, or undefined in some error cases.
  */
 function vehicleIdPostMethod(req, res, requiresEv, fn) {
+  if (!isValidApplicationId(req)) {
+    return sendInvalidApplicationId(req, res);
+  }
+
   if (isTokenExpired(req)) {
     return sendTokenExpiredJson(req, res);
   }
@@ -494,6 +518,10 @@ function vehicleIdPostMethod(req, res, requiresEv, fn) {
  * @returns The res.json result, or undefined in some error cases.
  */
 function vehicleIdGetCommandStatus(req, res, commandArray, fn, successCode) {
+  if (!isValidApplicationId(req)) {
+    return sendInvalidApplicationId(req, res);
+  }
+
   if (isTokenExpired(req)) {
     return sendTokenExpiredJson(req, res);
   }
@@ -543,6 +571,10 @@ function vehicleIdGetCommandStatus(req, res, commandArray, fn, successCode) {
  * @returns The res.json result, or undefined in some error cases.
  */
 function vehicleIdGetImage(req, res, fn) {
+  if (!isValidApplicationId(req)) {
+    return sendInvalidApplicationId(req, res);
+  }
+
   if (isTokenExpired(req)) {
     return sendTokenExpiredJson(req, res);
   }
@@ -668,6 +700,10 @@ function near(lat1, long1, lat2, long2) {
 }
 
 app.get('/api/fordconnect/vehicles/v1/:vehicleId/chargeSchedules', (req, res) => {
+  if (!isValidApplicationId(req)) {
+    return sendInvalidApplicationId(req, res);
+  }
+
   if (isTokenExpired(req)) {
     return sendTokenExpiredJson(req, res);
   }
@@ -750,6 +786,10 @@ function msUntilDepartureTime(departureTime) {
 
 // Returns the next departure time.
 app.get('/api/fordconnect/vehicles/v1/:vehicleId/departureTimes', (req, res) => {
+  if (!isValidApplicationId(req)) {
+    return sendInvalidApplicationId(req, res);
+  }
+
   if (isTokenExpired(req)) {
     return sendTokenExpiredJson(req, res);
   }
@@ -836,6 +876,10 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/statusrefresh/:commandId', (req
 });
 
 app.get('/api/fordconnect/vehicles/v1/:vehicleId', (req, res) => {
+  if (!isValidApplicationId(req)) {
+    return sendInvalidApplicationId(req, res);
+  }
+
   if (isTokenExpired(req)) {
     return sendTokenExpiredJson(req, res);
   }
@@ -866,6 +910,10 @@ app.post('/api/fordconnect/vehicles/v1/:vehicleId/location', (req, res) => {
 });
 
 app.get('/api/fordconnect/vehicles/v1/:vehicleId/location', (req, res) => {
+  if (!isValidApplicationId(req)) {
+    return sendInvalidApplicationId(req, res);
+  }
+
   if (isTokenExpired(req)) {
     return sendTokenExpiredJson(req, res);
   }

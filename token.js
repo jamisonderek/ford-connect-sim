@@ -6,6 +6,8 @@
 const { makeGuid } = require('./guid');
 const { getAccessTokenTimeout } = require('./timeout');
 
+const applicationId = 'afdc085b';
+
 const tokens = [];
 
 /**
@@ -26,6 +28,17 @@ function generateToken(tokenKey, isRefresh) {
   tokens.push(token);
   console.info(`Issued token: ${tokenKey}`);
   return token;
+}
+
+/**
+ * Check if a value is a valid applicationId.
+ *
+ * @param {*} req The client request.
+ * @returns Boolean. true if the id was valid.
+ */
+function isValidApplicationId(req) {
+  const appId = req.headers['application-id'];
+  return (appId !== undefined) && appId.startsWith(applicationId);
 }
 
 /**
@@ -111,5 +124,7 @@ function isTokenExpired(req) {
 
 exports.generateToken = generateToken;
 exports.getTokenFromRequest = getTokenFromRequest;
+exports.isValidApplicationId = isValidApplicationId;
 exports.isTokenExpired = isTokenExpired;
 exports.isValidRefreshToken = isValidRefreshToken;
+exports.applicationId = applicationId;

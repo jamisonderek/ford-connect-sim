@@ -13,7 +13,7 @@ const should = chai.should();
 const { expect } = chai;
 
 const { server } = app;
-const { generateToken } = require('../token');
+const { generateToken, applicationId } = require('../token');
 const { commands, createCommand } = require('../command');
 
 chai.use(chaiHttp);
@@ -30,6 +30,7 @@ describe('Unlock tests', () => {
       it('it should return HTTP 202 status code', (done) => {
         chai.request(server)
           .post(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -40,6 +41,7 @@ describe('Unlock tests', () => {
       it('it should return body with status code SUCCESS', (done) => {
         chai.request(server)
           .post(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -50,6 +52,7 @@ describe('Unlock tests', () => {
       it('it should return body with commandStatus of COMPLETED', (done) => {
         chai.request(server)
           .post(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -60,6 +63,7 @@ describe('Unlock tests', () => {
       it('it should return body with commandId matching a guid format', (done) => {
         chai.request(server)
           .post(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -71,6 +75,7 @@ describe('Unlock tests', () => {
         const queriedVehicle = anyVehicleId;
         chai.request(server)
           .post(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -85,6 +90,7 @@ describe('Unlock tests', () => {
       it('it should return HTTP 404 status code', (done) => {
         chai.request(server)
           .post(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -95,6 +101,7 @@ describe('Unlock tests', () => {
       it('it should return body with error code 4002', (done) => {
         chai.request(server)
           .post(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -105,6 +112,7 @@ describe('Unlock tests', () => {
       it('it should return body with error statusCode NOT_FOUND', (done) => {
         chai.request(server)
           .post(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -115,6 +123,7 @@ describe('Unlock tests', () => {
       it('it should return body with status of FAILED', (done) => {
         chai.request(server)
           .post(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -125,6 +134,7 @@ describe('Unlock tests', () => {
       it('it should return body with commandStatus of EMPTY', (done) => {
         chai.request(server)
           .post(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -139,6 +149,7 @@ describe('Unlock tests', () => {
       it('it should return HTTP 400 status code', (done) => {
         chai.request(server)
           .post(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -149,6 +160,7 @@ describe('Unlock tests', () => {
       it('it should return errorCode 400', (done) => {
         chai.request(server)
           .post(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -159,6 +171,7 @@ describe('Unlock tests', () => {
       it('it should return errorMessage containing "Invalid vehicleId"', (done) => {
         chai.request(server)
           .post(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -169,6 +182,7 @@ describe('Unlock tests', () => {
       it('it should return errorMessage containing "size must be between 32 and 32"', (done) => {
         chai.request(server)
           .post(url)
+          .set('Application-Id', applicationId)
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -184,6 +198,7 @@ describe('Unlock tests', () => {
       it('it should return HTTP 401 status code', (done) => {
         chai.request(server)
           .post(url)
+          .set('Application-Id', applicationId)
           .auth(invalidAuthToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
@@ -203,6 +218,7 @@ describe('Unlock tests', () => {
         it('it should return HTTP 200 status code', (done) => {
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
@@ -213,6 +229,7 @@ describe('Unlock tests', () => {
         it('it should return body with status of SUCCESS', (done) => {
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
@@ -223,6 +240,7 @@ describe('Unlock tests', () => {
         it('it should return body with commandStatus of PENDINGRESPONSE', (done) => {
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
@@ -233,6 +251,7 @@ describe('Unlock tests', () => {
         it('it should return body with commandId of matching id', (done) => {
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
@@ -244,6 +263,7 @@ describe('Unlock tests', () => {
           const queriedVehicle = anyVehicleId;
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
@@ -261,6 +281,7 @@ describe('Unlock tests', () => {
         it('it should return HTTP 401 status code', (done) => {
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
@@ -271,6 +292,7 @@ describe('Unlock tests', () => {
         it('it should return body with status of FAILED', (done) => {
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
@@ -281,6 +303,7 @@ describe('Unlock tests', () => {
         it('it should return body with commandStatus of FAILED', (done) => {
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
@@ -291,6 +314,7 @@ describe('Unlock tests', () => {
         it('it should return body with error code of 3000', (done) => {
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
@@ -301,6 +325,7 @@ describe('Unlock tests', () => {
         it('it should return body with error statusCode of UNAUTHORIZED', (done) => {
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
@@ -311,6 +336,7 @@ describe('Unlock tests', () => {
         it('it should return body with commandId of matching id', (done) => {
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
@@ -322,6 +348,7 @@ describe('Unlock tests', () => {
           const queriedVehicle = anyVehicleId;
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
@@ -339,6 +366,7 @@ describe('Unlock tests', () => {
         it('it should return HTTP 200 status code', (done) => {
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
@@ -349,6 +377,7 @@ describe('Unlock tests', () => {
         it('it should return body with status of SUCCESS', (done) => {
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
@@ -359,6 +388,7 @@ describe('Unlock tests', () => {
         it('it should return body with commandStatus of COMPLETED', (done) => {
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
@@ -369,6 +399,7 @@ describe('Unlock tests', () => {
         it('it should return body with commandId of matching id', (done) => {
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
@@ -380,6 +411,7 @@ describe('Unlock tests', () => {
           const queriedVehicle = anyVehicleId;
           chai.request(server)
             .get(url)
+            .set('Application-Id', applicationId)
             .auth(authToken, { type: 'bearer' })
             .send()
             .end((err, res) => {
