@@ -215,7 +215,7 @@ function sendInvalidApplicationId(req, res) {
   const appId = req.headers['application-id'];
   res.statusCode = 401;
   // No Vehicleid header is sent back.
-  const message = `Access denied due to ${appId === undefined ? 'missing' : 'invalid' } subscription key.`;
+  const message = `Access denied due to ${appId === undefined ? 'missing' : 'invalid'} subscription key.`;
   return res.json({
     statusCode: 401,
     message,
@@ -432,7 +432,13 @@ function getVehicleOrSendError(req, res) {
   return matches[0];
 }
 
-function oauth(req,res) {
+/**
+ * Internal method for sending the oauth response.
+ * @param {*} req The client request object.
+ * @param {*} res The response object.
+ * @returns res.json A response will be sent.
+ */
+function oauth(req, res) {
   let msg = '';
 
   if (!isValidClientId(req.fields['client_id'])) {
