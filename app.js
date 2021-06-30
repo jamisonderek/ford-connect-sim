@@ -475,6 +475,18 @@ app.get('/api/fordconnect/vehicles/v1', (req, res) => {
 });
 
 /**
+ * Checks if a vehicle supports EV functions.
+ *
+ * @param {*} engineType The engine type.
+ * @returns Boolean. true if the vehicle supports EV functions.
+ */
+function isEV(engineType) {
+  // PHEV (Plug-in Hybrid Electric Vehicle) and BEV (Battery Electric Vehicle) are EVs.
+  // ICE (Internal Combustion Engine) is NOT an EV.
+  return engineType && engineType.toUpperCase().indexOf('EV') >= 0;
+}
+
+/**
  * Processes a POST message for a vehicleId and invokes the callback method with the vehicle
  * and command object.
  *
@@ -495,7 +507,7 @@ function vehicleIdPostMethod(req, res, requiresEv, fn) {
 
   const match = getVehicleOrSendError(req, res);
   if (match) {
-    if (requiresEv && match.info && match.info.engineType !== 'EV') {
+    if (requiresEv && match.info && !isEV(match.info.engineType)) {
       return sendUnsupportedVehicle(req, res);
     }
 
@@ -723,7 +735,7 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/chargeSchedules', (req, res) =>
   if (match) {
     let nearbySchedule;
 
-    if (match.evdata && (match.info && match.info.engineType === 'EV')) {
+    if (match.evdata && (match.info && isEV(match.info.engineType))) {
       const matchLat = parseFloat(match.info.vehicleLocation.latitude);
       const matchLong = parseFloat(match.info.vehicleLocation.longitude);
 
@@ -807,7 +819,7 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/departureTimes', (req, res) => 
 
   const match = getVehicleOrSendError(req, res);
   if (match) {
-    if (match.info && match.info.engineType !== 'EV') {
+    if (match.info && !isEV(match.info.engineType)) {
       return sendVehicleNotAuthorized(req, res, false);
     }
 
@@ -1143,7 +1155,7 @@ app.post('/sim/plug/:vehicleId', (req, res) => {
   const match = getVehicleOrSendError(req, res);
 
   if (match) {
-    if (!match.info || match.info.engineType !== 'EV') {
+    if (!match.info || !isEV(match.info.engineType)) {
       res.statusCode = 400;
       return res.json({
         status: 'ERROR',
@@ -1277,7 +1289,7 @@ app.post('/sim/battery/:vehicleId', (req, res) => {
   const match = getVehicleOrSendError(req, res);
 
   if (match) {
-    if (!match.info || match.info.engineType !== 'EV') {
+    if (!match.info || !isEV(match.info.engineType)) {
       res.statusCode = 400;
       return res.json({
         status: 'ERROR',
