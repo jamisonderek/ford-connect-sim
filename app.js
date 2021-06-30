@@ -763,6 +763,7 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/chargeSchedules', (req, res) =>
     }
 
     res.statusCode = 200;
+    res.setHeader('Vehicleid', match.vehicle.vehicleId);
     return res.json(response);
   }
 
