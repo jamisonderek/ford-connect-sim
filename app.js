@@ -166,6 +166,7 @@ function DeepCopy(item) {
  */
 function sendBadVehicleIdLength(req, res) {
   res.statusCode = 400;
+  // No Vehicleid header is sent back.
   return res.json({
     errorCode: '400',
     errorMessage: 'getVehicleV3.vehicleId: Invalid vehicleId, getVehicleV3.vehicleId: size must be between 32 and 32',
@@ -181,6 +182,7 @@ function sendBadVehicleIdLength(req, res) {
 function sendBadMakeParameter(req, res) {
   // REVIEW: FordConnect server currently returns 500 status code, but we are returning 400.
   res.statusCode = 400;
+  // No Vehicleid header is sent back.
   return res.json({
     errorCode: '400',
     errorMessage: 'Invalid make parameter.  Must be one of: "F", "Ford", "L", "Lincoln".',
@@ -196,6 +198,7 @@ function sendBadMakeParameter(req, res) {
 function sendBadYearParameter(req, res) {
   // REVIEW: FordConnect currently returns 500 status code, but we are returning 400.
   res.statusCode = 400;
+  // No Vehicleid header is sent back.
   return res.json({
     errorCode: '400',
     errorMessage: 'Invalid year parameter.  Must be four digit format (like 2019).',
@@ -211,6 +214,7 @@ function sendBadYearParameter(req, res) {
 function sendInvalidApplicationId(req, res) {
   const appId = req.headers['application-id'];
   res.statusCode = 401;
+  // No Vehicleid header is sent back.
   const message = `Access denied due to ${appId === undefined ? 'missing' : 'invalid' } subscription key.`;
   return res.json({
     statusCode: 401,
@@ -226,6 +230,7 @@ function sendInvalidApplicationId(req, res) {
  */
 function sendTokenExpiredJson(req, res) {
   res.statusCode = 401;
+  // No Vehicleid header is sent back.
   return res.json({
     error: 'invalid_token',
     error_description: `Access token expired: ${reflectedUserInput(getTokenFromRequest(req))}`,
@@ -269,7 +274,11 @@ function sendUnauthorizedUser(req, res, commandId, vehicleId) {
  * @returns The res.json result.
  */
 function sendNotFound(req, res) {
+  const { vehicleId } = req.params;
   res.statusCode = 404;
+  if (vehicleId) {
+    res.setHeader('Vehicleid', reflectedUserInput(vehicleId));
+  }
   const response = {
     error: {
       code: 4002,
@@ -340,7 +349,9 @@ function sendVehicleNotAuthorized(req, res, isPost, vehicleId) {
  * @returns The res.json result.
  */
 function sendUnsupportedVehicle(req, res) {
+  const { vehicleId } = req.params;
   res.statusCode = 406;
+  res.setHeader('Vehicleid', reflectedUserInput(vehicleId));
   return res.json({
     error: {
       code: 4006,

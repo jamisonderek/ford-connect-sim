@@ -142,6 +142,18 @@ describe('Start engine tests', () => {
             done();
           });
       });
+      it('it should return header with Vehicleid containing the vehicleid requested', (done) => {
+        const queriedVehicle = badVehicleId;
+        chai.request(server)
+          .post(url)
+          .set('Application-Id', applicationId)
+          .auth(authToken, { type: 'bearer' })
+          .send()
+          .end((err, res) => {
+            expect(res.header.vehicleid).to.equal(queriedVehicle);
+            done();
+          });
+      });
     });
     describe('with wrong length vehicleId', () => {
       const shortVehicleId = 'TOOSHORTID';
