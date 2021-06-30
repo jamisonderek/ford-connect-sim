@@ -319,9 +319,10 @@ function sendNotFound(req, res) {
  * @param {*} res The response object.
  * @param {*} isPost Boolean. true if request is POST, false if GET.
  * @param {*} vehicleId The vehicleId the user specified or undefined.
+ * @param {*} addNullDepartureTimes If set, then a null depatureTimes will be added.
  * @returns The res.json result.
  */
-function sendVehicleNotAuthorized(req, res, isPost, vehicleId) {
+function sendVehicleNotAuthorized(req, res, isPost, vehicleId, addNullDepartureTimes) {
   if (isPost) {
     return sendUnauthorizedUser(req, res, undefined, vehicleId);
   }
@@ -336,7 +337,12 @@ function sendVehicleNotAuthorized(req, res, isPost, vehicleId) {
     },
     status: 'FAILED',
   };
-  res.setHeader('Vehicleid', vehicleId);
+  if (addNullDepartureTimes) {
+    response.departureTimes = null;
+  }
+  if (vehicleId) {
+    res.setHeader('Vehicleid', vehicleId);
+  }
   return res.json(response);
 }
 
@@ -821,7 +827,7 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/departureTimes', (req, res) => 
   const match = getVehicleOrSendError(req, res);
   if (match) {
     if (match.info && !isEV(match.info.engineType)) {
-      return sendVehicleNotAuthorized(req, res, false);
+      return sendVehicleNotAuthorized(req, res, false, match.vehicle.vehicleId, true);
     }
 
     let response;
@@ -1590,3 +1596,4 @@ app.use((req, res) => {
 
 exports.server = app;
 exports.vehicleData = vehicles;
+exports.today = today;
