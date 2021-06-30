@@ -128,7 +128,6 @@ describe('DepartureTimes tests', () => {
           .auth(authToken, { type: 'bearer' })
           .send()
           .end((err, res) => {
-            console.log(JSON.stringify(res.body));
             expect(today.hour).to.be.greaterThan(0, 'The test data should have departure after 2am');
             expect(res.body.departureTimes.hour).to.be.greaterThanOrEqual(0);
             expect(res.body.departureTimes.hour).to.be.lessThanOrEqual(23);
