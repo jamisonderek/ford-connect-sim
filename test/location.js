@@ -243,7 +243,7 @@ describe('Location tests', () => {
           .end((err, res) => {
             const actual = res.body.vehicleLocation;
             const expected = vehicleData.filter((v) => v.vehicle.vehicleId === anyVehicleId)[0];
-            const expectedGps = expected.info.vehicleStatus.vehicleLocation;
+            const expectedGps = expected.info.vehicleLocation;
             // Compare GPS data
             expect(actual.longitude).to.equal(expectedGps.longitude, 'longitude');
             expect(actual.latitude).to.equal(expectedGps.latitude, 'latitude');

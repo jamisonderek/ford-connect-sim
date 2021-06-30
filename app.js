@@ -713,8 +713,8 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/chargeSchedules', (req, res) =>
     let nearbySchedule;
 
     if (match.evdata && (match.info && match.info.engineType === 'EV')) {
-      const matchLat = parseFloat(match.info.vehicleStatus.vehicleLocation.latitude);
-      const matchLong = parseFloat(match.info.vehicleStatus.vehicleLocation.longitude);
+      const matchLat = parseFloat(match.info.vehicleLocation.latitude);
+      const matchLong = parseFloat(match.info.vehicleLocation.longitude);
 
       for (let i = 0; i < match.evdata.chargeSchedules.length; i += 1) {
         const s = match.evdata.chargeSchedules[i];
@@ -923,7 +923,7 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/location', (req, res) => {
     if (match.info && match.info.vehicleStatus) {
       const location = {
         status: 'SUCCESS',
-        vehicleLocation: DeepCopy(match.info.vehicleStatus.vehicleLocation),
+        vehicleLocation: DeepCopy(match.info.vehicleLocation),
       };
       location.vehicleLocation.direction = location.vehicleLocation.direction.toUpperCase();
       res.setHeader('Vehicleid', match.vehicle.vehicleId);
@@ -1366,18 +1366,18 @@ app.post('/sim/location/:vehicleId', (req, res) => {
       });
     }
 
-    match.info.vehicleStatus.vehicleLocation.latitude = latitude.toFixed(6).toString();
-    match.info.vehicleStatus.vehicleLocation.longitude = longitude.toFixed(6).toString();
-    match.info.vehicleStatus.vehicleLocation.timeStamp = timestamp.now();
+    match.info.vehicleLocation.latitude = latitude.toFixed(6).toString();
+    match.info.vehicleLocation.longitude = longitude.toFixed(6).toString();
+    match.info.vehicleLocation.timeStamp = timestamp.now();
     match.info.vehicleDetails.mileage += distanceInMiles;
     match.info.vehicleDetails.odometer += (distanceInMiles * 1.609344);
 
     if (updatedSpeed !== undefined) {
-      match.info.vehicleStatus.vehicleLocation.speed = updatedSpeed;
+      match.info.vehicleLocation.speed = updatedSpeed;
     }
 
     if (dir !== undefined) {
-      match.info.vehicleStatus.vehicleLocation.direction = dir;
+      match.info.vehicleLocation.direction = dir;
     }
 
     res.statusCode = 200;

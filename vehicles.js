@@ -102,13 +102,13 @@ exports.ice1_info = {
         timeStamp: timestamp.now(),
       },
     ],
-    vehicleLocation: {
-      longitude: '-83.205202',
-      latitude: '42.300291',
-      speed: 0.0,
-      direction: 'NorthWest',
-      timeStamp: timestamp.now(),
-    },
+  },
+  vehicleLocation: {
+    longitude: '-83.205202',
+    latitude: '42.300291',
+    speed: 0.0,
+    direction: 'NorthWest',
+    timeStamp: timestamp.now(),
   },
 };
 
@@ -214,13 +214,13 @@ exports.ev1_info = {
         timeStamp: timestamp.now(),
       },
     ],
-    vehicleLocation: {
-      longitude: '-95.905261',
-      latitude: '36.113439',
-      speed: 0.0,
-      direction: 'East',
-      timeStamp: timestamp.now(),
-    },
+  },
+  vehicleLocation: {
+    longitude: '-95.905261',
+    latitude: '36.113439',
+    speed: 0.0,
+    direction: 'East',
+    timeStamp: timestamp.now(),
   },
 };
 
