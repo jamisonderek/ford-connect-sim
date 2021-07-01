@@ -9,6 +9,41 @@
 			"name": "Simulator API",
 			"item": [
 				{
+					"name": "Get all simulator info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Clone",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/sim/clone",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"sim",
+								"clone"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Today is Friday 1:15PM (impacts departure time)",
 					"request": {
 						"method": "POST",

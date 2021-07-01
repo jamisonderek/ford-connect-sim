@@ -141,6 +141,8 @@ For more information about the simulation routes, please look in app.js file, se
 
 |route|params (*=optional)|example|comments|
 |-----|------|-------|-------|
+|GET /sim|||Returns the vehicles in the simulator
+|/sim/clone|body: refresh_token|refresh_token=ey....|Clones the FordConnect API response for the user returned by the refresh_token.  This will import the test vehicles from the account and let you modify their state. 
 |/sim/today|day, time|day=FRIDAY&time=13:15|Set the simulator's today value (used for determining the next departure time.)
 |/sim/psi/:vehicleId|warning|warning=true|Sets the tirePressureWarning on a vehicle.
 |/sim/modem/:vehicleId|enabled|enabled=false|Sets the modem on a vehicle.

@@ -1611,6 +1611,49 @@ app.post('/sim/locks/:vehicleId', (req, res) => {
   return undefined;
 });
 
+// Clones the FordConnect API for a given refresh token.
+//
+// body: [refresh_token] Your real FordConnect API refresh token.
+// expected status: 200 (success), 400 (bad parameter)
+app.post('/sim/clone', (req, res) => {
+  const refreshToken = req.fields['refresh_token'];
+  if (refreshToken === undefined) {
+    res.statusCode = 400;
+    return res.json({
+      msg: 'Missing refresh_token POST parameter',
+      status: 'FAILED',
+    });
+  }
+
+  // TODO: Use refreshToken to get an access token.
+  // TODO: Get vehicleList
+  //   For each vehicle
+  //     initial data is iceN or evN.
+  //     extract vehicleId
+  //     get details, data is iceN_info.  (may be null is vehicleAuthorizationIndicator === 0)
+  //     get full image and save in image\{vehicleId-full.png}
+  //     get thumbnail image and save in image\{vehicleId-thumb.png}
+  //     If isEV then
+  //       getDepartureTimes (NOTE: We can only get next departure time, not ALL of them.)
+  //         reformat the data (hh:mm)
+  //       getChargeSchedules (NOTE: We can only get for the current location, not all locations.)
+  //         augment the data (lat, long, name, desiredChargeLevel)
+
+  res.statusCode = 200;
+  return res.json({
+    msg: `TODO: Clone your environment using "${refreshToken}".`,
+    status: 'SUCCESS',
+  });
+});
+
+// Returns the simulators current vehicle model.
+//
+// expected status: 200 (success)
+app.get('/sim', (req, res) => {
+  res.statusCode = 200;
+  res.json(vehicles);
+});
+
 app.use((req, res) => {
   res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
 });
