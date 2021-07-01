@@ -615,11 +615,25 @@ function vehicleIdGetImage(req, res, fn) {
   }
 
   const { make } = req.query;
+  if (make === undefined) {
+    res.statusCode = 404;
+    return res.json({ statusCode: 404, message: 'Resource not found' });
+  }
   if (!isValidMake(make)) {
     return sendBadMakeParameter(req, res);
   }
 
+  const { model } = req.query;
+  if (model === undefined) {
+    res.statusCode = 404;
+    return res.json({ statusCode: 404, message: 'Resource not found' });
+  }
+
   const { year } = req.query;
+  if (year === undefined) {
+    res.statusCode = 404;
+    return res.json({ statusCode: 404, message: 'Resource not found' });
+  }
   if (!isValidYear(year)) {
     return sendBadYearParameter(req, res);
   }
@@ -634,6 +648,7 @@ function vehicleIdGetImage(req, res, fn) {
     const imageName = fn(match);
 
     // TODO: Send same cache headers as FordConnect server.
+    res.setHeader('Vehicleid', match.vehicle.vehicleId);
     return res.sendFile(imageName, options);
   }
 
