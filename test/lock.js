@@ -212,7 +212,7 @@ describe('Lock tests', () => {
     describe('with valid vehicleId', () => {
       describe('with valid commandId used immediately (pending)', () => {
         const anyVehicleId = mockVehicles.ev1.vehicleId;
-        const cmd = createCommand(anyVehicleId);
+        const cmd = createCommand(anyVehicleId, 20 * 1000); // pending for 20 seconds.
         commands.lock.push(cmd);
         const url = `/api/fordconnect/vehicles/v1/${anyVehicleId}/lock/${cmd.commandId}`;
         it('it should return HTTP 200 status code', (done) => {

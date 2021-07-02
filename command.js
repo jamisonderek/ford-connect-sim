@@ -58,14 +58,19 @@ function getCommand(req, commandArray) {
 /**
  * Returns a new command object (4 seconds of "PENDINGRESPONSE", then "COMPLETED")
  * @param {*} vehicleId The vehicleId for the command.
+ * @param {*} duration The duration for pending response. Use undefined for default time.
  * @returns A command object with a random commandId.
  */
-function createCommand(vehicleId) {
+function createCommand(vehicleId, duration) {
+  if (duration === undefined) {
+    duration = 4000;
+  }
+
   return {
     commandId: makeGuid(),
     vehicleId: toLower(vehicleId),
     timestamp: Date.now(),
-    commandStatuses: '4000,PENDINGRESPONSE;-1,COMPLETED',
+    commandStatuses: `${duration},PENDINGRESPONSE;-1,COMPLETED`,
     commandStatus: 'PENDINGRESPONSE', // possible values: PENDINGRESPONSE, COMPLETED, FAILED
   };
 }

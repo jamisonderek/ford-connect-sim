@@ -214,7 +214,7 @@ describe('Status tests', () => {
     describe('with valid vehicleId', () => {
       describe('with valid commandId used immediately (pending)', () => {
         const anyVehicleId = mockVehicles.ev1.vehicleId;
-        const cmd = createCommand(anyVehicleId);
+        const cmd = createCommand(anyVehicleId, 20 * 1000); // pending for 20 seconds.
         commands.status.push(cmd);
         const url = `/api/fordconnect/vehicles/v1/${anyVehicleId}/statusrefresh/${cmd.commandId}`;
         it('it should return HTTP 202 status code', (done) => {
