@@ -1628,6 +1628,7 @@ app.post('/sim/locks/:vehicleId', (req, res) => {
 // expected status: 200 (success), 400 (bad parameter)
 app.post('/sim/clone', async (req, res) => {
   const actualRefreshToken = req.fields['refresh_token'];
+  const clones = [];
   if (actualRefreshToken === undefined) {
     res.statusCode = 400;
     return res.json({
@@ -1733,6 +1734,7 @@ app.post('/sim/clone', async (req, res) => {
         console.log(departures);
         console.log(schedules);
         console.log(paramDetails);
+        clones.push({ kind: paramDetails.vehicle.engineType, vehicleId });
       } else {
         console.log(`* CREATED ICE ${vehicleId} *`);
         vehicles.push({
@@ -1740,6 +1742,7 @@ app.post('/sim/clone', async (req, res) => {
           info: paramDetails.vehicle,
           extra: makeExtra(`${vehicleId}-full.png`, `${vehicleId}-thumb.png`),
         });
+        clones.push({ kind: paramDetails.vehicle.engineType, vehicleId });
       }
     } else {
       console.log(`* CREATED UNAUTH ${vehicleId} *`);
@@ -1748,12 +1751,13 @@ app.post('/sim/clone', async (req, res) => {
         info: undefined,
         extra: makeExtra('full-image.png', 'thumbnail.png'),
       });
+      clones.push({ kind: 'UNAUTH', vehicleId });
     }
   }
 
   res.statusCode = 200;
   return res.json({
-    msg: `TODO: Clone your environment using "${actualRefreshToken}".`,
+    msg: clones,
     status: 'SUCCESS',
   });
 });
