@@ -1693,7 +1693,6 @@ app.post('/sim/clone', async (req, res) => {
       let streamFull = createWriteStream(`images\\${vehicleId}-full.png`, { encoding: 'binary' });
       streamFull.write(answers[1].body);
       streamFull.end();
-      console.log(`body length is ${answers[1].body.length}`);
 
       streamFull = createWriteStream(`images\\${vehicleId}-thumb.png`, { encoding: 'binary' });
       streamFull.write(answers[2].body);
