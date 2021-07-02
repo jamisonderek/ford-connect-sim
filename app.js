@@ -1637,7 +1637,7 @@ app.post('/sim/clone', async (req, res) => {
   }
 
   // Use refreshToken to get an access token.
-  if (!await refreshToken(0, actualRefreshToken)) {
+  if (!await refreshToken(getAccessTokenTimeout(), actualRefreshToken)) {
     res.statusCode = 400;
     return res.json({
       status: 'FAILED',
