@@ -43,6 +43,7 @@ const express = require('express');
 const http = require('http');
 const formidable = require('express-formidable');
 const path = require('path');
+const { createWriteStream } = require('fs');
 const timestamp = require('./timestamp');
 const mockVehicles = require('./vehicles');
 
@@ -1687,8 +1688,15 @@ app.post('/sim/clone', async (req, res) => {
       }
 
       const paramDetails = answers[0].body;
-      const imgFull = answers[1].body;
-      const imgThumb = answers[2].body;
+
+      let streamFull = createWriteStream(`images\\${vehicleId}-full.png`, { encoding: 'binary' });
+      streamFull.write(answers[1].body);
+      streamFull.end();
+      console.log(`body length is ${answers[1].body.length}`);
+
+      streamFull = createWriteStream(`images\\${vehicleId}-thumb.png`, { encoding: 'binary' });
+      streamFull.write(answers[2].body);
+      streamFull.end();
 
       // If isEV then
       if (isEV(paramDetails.engineType)) {
@@ -1725,16 +1733,12 @@ app.post('/sim/clone', async (req, res) => {
         console.log(departures);
         console.log(schedules);
         console.log(paramDetails);
-        console.log(imgFull.length);
-        console.log(imgThumb.length);
       } else {
         // TODO: Create ICE
         console.log('* CREATE ICE *');
         console.log(vehicleId);
         console.log(paramVehicle);
         console.log(paramDetails);
-        console.log(imgFull.length);
-        console.log(imgThumb.length);
       }
     } else {
       // TODO:Create Unauthorized.
