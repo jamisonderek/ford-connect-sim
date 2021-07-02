@@ -925,12 +925,12 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/statusrefresh/:commandId', (req
       }
       response.vehiclestatus = {
         lockStatus: {
-          value: doorsLocked,
           timestamp: match.extra.doorsLockedTimestamp,
+          value: doorsLocked,
         },
         alarm: {
-          value: alarmValue,
           timestamp: match.extra.alarmTimestamp,
+          value: alarmValue,
         },
       };
     }
@@ -1734,17 +1734,20 @@ app.post('/sim/clone', async (req, res) => {
         console.log(schedules);
         console.log(paramDetails);
       } else {
-        // TODO: Create ICE
-        console.log('* CREATE ICE *');
-        console.log(vehicleId);
-        console.log(paramVehicle);
-        console.log(paramDetails);
+        console.log(`* CREATED ICE ${vehicleId} *`);
+        vehicles.push({
+          vehicle: paramVehicle,
+          info: paramDetails.vehicle,
+          extra: makeExtra(`${vehicleId}-full.png`, `${vehicleId}-thumb.png`),
+        });
       }
     } else {
-      // TODO:Create Unauthorized.
-      console.log('* CREATE UNAUTH *');
-      console.log(vehicleId);
-      console.log(paramVehicle);
+      console.log(`* CREATED UNAUTH ${vehicleId} *`);
+      vehicles.push({
+        vehicle: paramVehicle,
+        info: undefined,
+        extra: makeExtra('full-image.png', 'thumbnail.png'),
+      });
     }
   }
 
