@@ -126,16 +126,18 @@ async function updateTokenFromCode(authCode) {
  *
  * @param {*} duration The number of seconds the token must be good for.  If undefined then
  * the refresh will happen regardless of the token expiration.
+ * @param {*} specialRefreshToken A specific refresh token to use.  If undefined then the last know
+ * refresh token will be used.
  *
  * @returns Boolean. true if the token was updated.
  */
-async function refreshToken(duration) {
+async function refreshToken(duration, specialRefreshToken) {
   if (duration === undefined || (token.expiresOn - Date.now() / 1000) < duration) {
     const data = jsonToFormData({
       grant_type: 'refresh_token',
       client_id: clientId,
       client_secret: clientSecret,
-      refresh_token: token.refreshToken,
+      refresh_token: (specialRefreshToken !== undefined) ? specialRefreshToken : token.refreshToken,
     });
 
     return $updateToken(data);

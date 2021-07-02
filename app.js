@@ -62,6 +62,16 @@ const { isValidClientId, isValidClientSecret, isValidRedirectUri } = require('./
 
 const { commands, createCommand, getCommand } = require('./command');
 
+const {
+  refreshToken,
+  getVehicles,
+  getDetails,
+  imageFull,
+  imageThumbnail,
+  getDepartureTimes,
+  getChargeSchedule,
+} = require('./fordConnect/fordConnect');
+
 const app = express();
 
 /**
@@ -382,7 +392,7 @@ function sendRefreshTokenResponse(req, res) {
   console.log('Updating token');
 
   const token = generateToken();
-  const refreshToken = generateToken(undefined, true);
+  const simRefreshToken = generateToken(undefined, true);
 
   return res.json({
     access_token: token.key,
@@ -395,7 +405,7 @@ function sendRefreshTokenResponse(req, res) {
     id_token_expires_in: getAccessTokenTimeout(),
     profile_info: 'ejyAAA==', // Stub - we don't use this.
     scope: 'https://simulated-environment.onmicrosoft.com/fordconnect/access openid offline_access',
-    refresh_token: refreshToken.key,
+    refresh_token: simRefreshToken.key,
     refresh_token_expires_in: 7776000, // 90 days.
   });
 }
@@ -1615,9 +1625,9 @@ app.post('/sim/locks/:vehicleId', (req, res) => {
 //
 // body: [refresh_token] Your real FordConnect API refresh token.
 // expected status: 200 (success), 400 (bad parameter)
-app.post('/sim/clone', (req, res) => {
-  const refreshToken = req.fields['refresh_token'];
-  if (refreshToken === undefined) {
+app.post('/sim/clone', async (req, res) => {
+  const actualRefreshToken = req.fields['refresh_token'];
+  if (actualRefreshToken === undefined) {
     res.statusCode = 400;
     return res.json({
       msg: 'Missing refresh_token POST parameter',
@@ -1625,23 +1635,118 @@ app.post('/sim/clone', (req, res) => {
     });
   }
 
-  // TODO: Use refreshToken to get an access token.
-  // TODO: Get vehicleList
-  //   For each vehicle
-  //     initial data is iceN or evN.
-  //     extract vehicleId
-  //     get details, data is iceN_info.  (may be null is vehicleAuthorizationIndicator === 0)
-  //     get full image and save in image\{vehicleId-full.png}
-  //     get thumbnail image and save in image\{vehicleId-thumb.png}
-  //     If isEV then
-  //       getDepartureTimes (NOTE: We can only get next departure time, not ALL of them.)
-  //         reformat the data (hh:mm)
-  //       getChargeSchedules (NOTE: We can only get for the current location, not all locations.)
-  //         augment the data (lat, long, name, desiredChargeLevel)
+  // Use refreshToken to get an access token.
+  if (!await refreshToken(0, actualRefreshToken)) {
+    res.statusCode = 400;
+    return res.json({
+      status: 'FAILED',
+      msg: 'Failed to refresh token using refresh_token.',
+    });
+  }
+
+  // Get vehicleList
+  const response = await getVehicles();
+  if (response.statusCode !== 200 || response.body.status !== 'SUCCESS') {
+    res.statusCode = 418;
+    return res.json({
+      status: 'FAILED',
+      msg: `Failed to get list of vehicles.  statusCode was ${response.statusCode} with status ${response.body.status}.`,
+    });
+  }
+  const vehicleList = response.body.vehicles;
+
+  // For each vehicle
+  for (let i = 0; i < vehicleList.length; i += 1) {
+    // initial data is iceN or evN.
+    const paramVehicle = vehicleList[i];
+
+    // extract vehicleId
+    const { vehicleId } = vehicleList[i];
+
+    if (paramVehicle.vehicleAuthorizationIndicator) {
+      // eslint-disable-next-line no-await-in-loop
+      let requests = [
+        // get details, data is iceN_info.
+        getDetails(vehicleId),
+        // get full image and save in image\{vehicleId-full.png}
+        imageFull(vehicleId),
+        // get thumbnail image and save in image\{vehicleId-thumb.png}
+        imageThumbnail(vehicleId),
+      ];
+      // eslint-disable-next-line no-await-in-loop
+      let answers = await Promise.all(requests);
+
+      for (let j = 0; j < requests.length; j += 1) {
+        if (answers[j].statusCode !== 200) {
+          res.statusCode = 418;
+          return res.json({
+            status: 'FAILED',
+            msg: `Failed to get data (${j}) for ${vehicleId}.  statusCode was ${answers[j].statusCode} with status ${answers[j].body.status}.`,
+          });
+        }
+      }
+
+      const paramDetails = answers[0].body;
+      const imgFull = answers[1].body;
+      const imgThumb = answers[2].body;
+
+      // If isEV then
+      if (isEV(paramDetails.engineType)) {
+        requests = [
+          // getDepartureTimes (NOTE: We can only get next departure time, not ALL of them.)
+          getDepartureTimes(vehicleId),
+          // getChargeSchedules (NOTE: We can only get for the current location, not all locations.)
+          getChargeSchedule(vehicleId),
+        ];
+
+        // eslint-disable-next-line no-await-in-loop
+        answers = await Promise.all(requests);
+
+        for (let j = 0; j < requests.length; j += 1) {
+          if (answers[j].statusCode !== 200 || answers[j].body.status !== 'SUCCESS') {
+            res.statusCode = 418;
+            return res.json({
+              status: 'FAILED',
+              msg: `Failed to get ev data (${j}) for ${vehicleId}.  statusCode was ${answers[j].statusCode} with status ${answers[j].body.status}.`,
+            });
+          }
+        }
+
+        // reformat the data (hh:mm)
+        const departures = answers[0].body; // TODO: Reformat.
+
+        // augment the data (lat, long, name, desiredChargeLevel)
+        const schedules = answers[1].body; // TODO: Augment.
+
+        // TODO: Create EV
+        console.log('* CREATE EV *');
+        console.log(vehicleId);
+        console.log(paramVehicle);
+        console.log(departures);
+        console.log(schedules);
+        console.log(paramDetails);
+        console.log(imgFull.length);
+        console.log(imgThumb.length);
+      } else {
+        // TODO: Create ICE
+        console.log('* CREATE ICE *');
+        console.log(vehicleId);
+        console.log(paramVehicle);
+        console.log(paramDetails);
+        console.log(imgFull.length);
+        console.log(imgThumb.length);
+      }
+    } else {
+      // TODO:Create Unauthorized.
+      console.log('* CREATE UNAUTH *');
+      console.log(vehicleId);
+      console.log(paramVehicle);
+    }
+  }
 
   res.statusCode = 200;
   return res.json({
-    msg: `TODO: Clone your environment using "${refreshToken}".`,
+    msg: `TODO: Clone your environment using "${actualRefreshToken}".`,
     status: 'SUCCESS',
   });
 });
