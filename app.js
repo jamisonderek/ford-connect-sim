@@ -1795,6 +1795,15 @@ try {
   const httpServer3000 = https.createServer(options3000, app3000);
   httpServer3000.listen(3000);
   console.log('Also listening on port 3000!');
+
+  // This route shuts down the listener on port 3000.  If your application requires port 3000,
+  // then once the simulator is populated, you can use this route to shut down the listener
+  // for cloning cars.  You can still use the port 80 and the /sim/clone route if you need to
+  // import additional vehicles.
+  app3000.get('/quit', (req, res) => {
+    httpServer3000.close();
+    res.send('Server on port 3000 is shut down.');
+  });
 } catch (err) {
   console.log(`Error starting HTTPS server. ${err}`);
 }
