@@ -41,8 +41,10 @@
 
 const express = require('express');
 const http = require('http');
+const https = require('https');
 const formidable = require('express-formidable');
 const path = require('path');
+const fs = require('fs');
 const { createWriteStream } = require('fs');
 const timestamp = require('./timestamp');
 const mockVehicles = require('./vehicles');
@@ -64,6 +66,7 @@ const { isValidClientId, isValidClientSecret, isValidRedirectUri } = require('./
 const { commands, createCommand, getCommand } = require('./command');
 
 const {
+  updateTokenFromCode,
   refreshToken,
   getVehicles,
   getDetails,
@@ -141,8 +144,8 @@ if (process.env.NODE_ENV !== 'test') {
 app.use(formidable());
 
 // The code is only good until the codeExpireTimestamp.
-const code = process.env.FORDSIM_CODE || `Code${makeGuid()}`;
-const codeExpireTimestamp = Date.now() + getCodeTimeout() * 1000;
+let code = process.env.FORDSIM_CODE || `Code${makeGuid()}`;
+let codeExpireTimestamp = Date.now() + getCodeTimeout() * 1000;
 console.log(`Code is: ${code}`);
 
 /**
@@ -1622,29 +1625,8 @@ app.post('/sim/locks/:vehicleId', (req, res) => {
   return undefined;
 });
 
-// Clones the FordConnect API for a given refresh token.
-//
-// body: [refresh_token] Your real FordConnect API refresh token.
-// expected status: 200 (success), 400 (bad parameter)
-app.post('/sim/clone', async (req, res) => {
-  const actualRefreshToken = req.fields['refresh_token'];
+async function clone(req, res) {
   const clones = [];
-  if (actualRefreshToken === undefined) {
-    res.statusCode = 400;
-    return res.json({
-      msg: 'Missing refresh_token POST parameter',
-      status: 'FAILED',
-    });
-  }
-
-  // Use refreshToken to get an access token.
-  if (!await refreshToken(getAccessTokenTimeout(), actualRefreshToken)) {
-    res.statusCode = 400;
-    return res.json({
-      status: 'FAILED',
-      msg: 'Failed to refresh token using refresh_token.',
-    });
-  }
 
   // Get vehicleList
   const response = await getVehicles();
@@ -1759,6 +1741,32 @@ app.post('/sim/clone', async (req, res) => {
     msg: clones,
     status: 'SUCCESS',
   });
+}
+
+// Clones the FordConnect API for a given refresh token.
+//
+// body: [refresh_token] Your real FordConnect API refresh token.
+// expected status: 200 (success), 400 (bad parameter)
+app.post('/sim/clone', async (req, res) => {
+  const actualRefreshToken = req.fields['refresh_token'];
+  if (actualRefreshToken === undefined) {
+    res.statusCode = 400;
+    return res.json({
+      msg: 'Missing refresh_token POST parameter',
+      status: 'FAILED',
+    });
+  }
+
+  // Use refreshToken to get an access token.
+  if (!await refreshToken(getAccessTokenTimeout(), actualRefreshToken)) {
+    res.statusCode = 400;
+    return res.json({
+      status: 'FAILED',
+      msg: 'Failed to refresh token using refresh_token.',
+    });
+  }
+
+  return clone(req, res);
 });
 
 // Returns the simulators current vehicle model.
@@ -1771,6 +1779,116 @@ app.get('/sim', (req, res) => {
 
 app.use((req, res) => {
   res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
+});
+
+const app3000 = express();
+
+// Ccreate a PFX cert file in Windows by downloading the tool at...
+// https://www.pluralsight.com/blog/software-development/selfcert-create-a-self-signed-certificate-interactively-gui-or-programmatically-in-net
+//
+try {
+  const certPfx = fs.readFileSync('./cert.pfx');
+  const options3000 = {
+    pfx: certPfx,
+    passphrase: process.env.FORDSIM_PASSPHRASE,
+  };
+  const httpServer3000 = https.createServer(options3000, app3000);
+  httpServer3000.listen(3000);
+  console.log('Also listening on port 3000!');
+} catch (err) {
+  console.log(`Error starting HTTPS server. ${err}`);
+}
+
+// This route gets called by the auth callback.  It will clone the vehicles.
+//
+// expected status: 200 (success) ,400 (bad code), 418 (failed getting data)
+app3000.get('/', async (req, res) => {
+  const authCode = req.query.code;
+
+  if (!await updateTokenFromCode(authCode)) {
+    res.statusCode = 400;
+    return res.send('The code parameter was invalid.');
+  }
+
+  if (!await refreshToken(getAccessTokenTimeout(), undefined)) {
+    res.statusCode = 400;
+    return res.send('Failed to refresh token using refresh_token.');
+  }
+
+  const response = await getVehicles();
+  if (response.statusCode !== 200 || response.body.status !== 'SUCCESS') {
+    res.statusCode = 418;
+    return res.send(`Failed to get list of vehicles.  statusCode was ${response.statusCode}.`);
+  }
+  const vehicleList = response.body.vehicles;
+
+  const clonedRes = {
+    statusCode: 0,
+    json: () => { },
+  };
+  await clone(req, clonedRes);
+  if (clonedRes.statusCode !== 200) {
+    res.statusCode = clonedRes.statusCode;
+    return res.send(`Failed to clone vehicles.  statusCode was ${clonedRes.statusCode}`);
+  }
+
+  const authVehicleList = vehicleList.filter((v) => v.vehicleAuthorizationIndicator);
+  if (authVehicleList.length === 0) {
+    res.statusCode = 418;
+    return res.send('No authorized vehicles cloned.');
+  }
+
+  // Create a new code and reset the timer on the code.
+  code = `Code${makeGuid()}`;
+  codeExpireTimestamp = Date.now() + getCodeTimeout() * 1000;
+
+  let msg = '<html><head><title>Your vehicles are cloned</title>';
+  msg += '<style>body{font-family:Tahoma,Geneva,sans-serif;color:#0276B3;}'
+  + '.code{background-color:#ffff92;}.vid{background-color:#e8f0fe;}'
+  + '.line{margin-top:25px;}.warn{color:#000;background-color:#ffc7e3;}'
+  + 'table{font-size:25px;}h2{margin-top: 5px;margin-bottom: 0px;}'
+  + '</style></head><body><center><h1>Your vehicles are cloned.</h1>'
+  + '<h2>The simulator&apos;s authorization code is :</h2>'
+  + `<h2><span class="code">${code}</span></h2>`;
+  for (let i = 0; i < authVehicleList.length; i += 1) {
+    const veh = vehicles.find((v) => v.vehicle.vehicleId === authVehicleList[i].vehicleId);
+    msg += `<h2 class="line">Vehicle id: <span class="vid">${veh.vehicle.vehicleId}</span></h2>`;
+    const engineType = veh.info.engineType === 'ICE' ? 'ICE (Internal Combustion Engine)' : veh.info.engineType;
+    msg += `<table border=1><tr><td class="label">Engine type</td><td class="data">${engineType}</td></tr>`;
+    let { make } = veh.info;
+    if (make === 'F') {
+      make = 'Ford';
+    }
+    if (make === 'L') {
+      make = 'Lincoln';
+    }
+    msg += `<tr><td class="label">Make</td><td class="data">${make}</td></tr>`;
+    msg += `<tr><td class="label">Model</td><td class="data">${veh.vehicle.modelYear} ${veh.vehicle.modelName}</td></tr>`;
+    const fuelPercent = veh.info.vehicleDetails.fuelLevel.value;
+    const fuelKm = veh.info.vehicleDetails.fuelLevel.distanceToEmpty;
+    const fuelMi = (parseFloat(fuelKm) * 1.61).toFixed(1);
+    msg += `<tr><td class="label">Fuel</td><td class="data">${fuelPercent}% (DTE: ${fuelKm}km/${fuelMi}mi)</td></tr>`;
+    const lat = veh.info.vehicleLocation.latitude;
+    const lon = veh.info.vehicleLocation.longitude;
+    msg += `<tr><td class="label">Latitude</td><td class="data">${lat}</td></tr>`;
+    msg += `<tr><td class="label">Longitude</td><td><div class="data" style="display:inline-block">${lon}</div><div style="float: right">`;
+    msg += `<a href="https://www.bing.com/maps?cp=${lat}~${lon}&sty=r&lvl=17&FORM=MBEDLD" target="blank">Open map</a></div></td></tr>`;
+    msg += '<tr><td colspan=2><div style="height:400px; position:relative">';
+    msg += '<iframe style="z-index:1" width="500" height="400" frameborder="0" src="https://www.bing.com/maps/embed?h=400&w=500&';
+    msg += `cp=${lat}~${lon}&lvl=17&typ=d&sty=r&src=SHELL&FORM=MBEDV8" scrolling="no"></iframe>`;
+    const circle = 'https://raw.githubusercontent.com/jamisonderek/ford-connect-sim/main/images/circle.png';
+    msg += `<img style="top:120px; right:200px; position:absolute; z-index:2" width="150" height="150" src="${circle}"></div></td></tr>`;
+    msg += '</table><p>';
+  }
+
+  msg += '</center></body></html>';
+
+  res.statusCode = 200;
+  return res.send(msg);
+});
+
+app3000.use((req, res) => {
+  res.status(404).send('The https route you requested is not supported.');
 });
 
 exports.server = app;
