@@ -17,7 +17,7 @@
  *   set of the oauth authentication.  If it is not set, then the refresh token value
  *   returned by the first oauth call will be used.
  *
- *   FORD_NGROK environment variable is the domain name of your ngrok server
+ *   FORDSIM_NGROK environment variable is the domain name of your ngrok server
  *   hosting the simulator.  If it is not set, then the FordConnect API server
  *   (*.ford.com) will be used instead.
  *

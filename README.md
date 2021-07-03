@@ -31,6 +31,11 @@ The above steps only need to be performed one time, however running the _npm ci_
 
 If desired you can set any [supported environment variables](#supported-environment-variables), for example running on a custom http port number.
 
+If you want the simulator to also respond on https port 3000, you need to create and save a **cert.pfx** file in the root of the project.  There are many ways to create a certificate, but one of the
+easier methods is to download the certificate generator from [PluralSight](https://www.pluralsight.com/blog/software-development/selfcert-create-a-self-signed-certificate-interactively-gui-or-programmatically-in-net) -- at the bottom of the page you should see a "Download the project here" link.  The password you choose for the certificate should also be saved in the **FORDSIM_PASSPHRASE** environment variable.
+
+You must also set the **FORD_CLIENTSECRET** with the secret value to authenticate to the FordConnect API when cloning vehicles. (NOTE: this is FORD_ not FORDSIM_ since it refers to Ford's servers not the simulator).  You can find this value in your Postman environment settings.  
+
 Now that you have all of your dependencies installed and any environment variables set, you are ready to start the server using the following command:
 ```
 node app
@@ -47,6 +52,12 @@ Code is: Code1623699743125
 If you get something like
 <font color='#0F0'>Error: listen EADDRINUSE: address already in use :::80</font> then that means you either have another copy of the simulator running or some other service is running on that port.  In that case you should set the FORDSIM_HTTPPORT to a different value, like 8080.
 
+If you get something like
+<font color='#0F0'>Error starting HTTPS server. Error: ENOENT: no such file or directory, open './cert.pfx'</font> be sure you followed the [directions](#starting-the-simulator) for creating the cert.pfx file.
+
+If you get something like
+<font color='#0F0'>Error starting HTTPS server. Error: mac verify failure</font> be sure that you set the FORDSIM_PASSPHRASE environment variable correctly.
+
 ## Supported Environment Variables:
 When the simulator starts, it will look for the following optional environment variables:
 
@@ -57,12 +68,15 @@ FORDSIM_CODE|SomeCode|auto-generated|The code needed for the initial call to the
 FORDSIM_TOKEN|SomeToken|auto-generated|The code needed for invoking APIs. Typically it is preferred that the caller use the oauth2 route to retrieve the token, but for initial testing this value may be used. This will be displayed when the server starts if it was set by the user. 
 FORDSIM_TIMEOUT|300|1200|Number of seconds before code + access token expire.  Reducing this value is useful for testing your application's ability to refresh the token.  Generally, you should also update your application to have the same thresholds (so you are auto-refreshing the token instead of getting a access token expired message).
 FORDSIM_CMDTIMEOUT|180|120|Number of seconds before a returned commandId value expires and return HTTP 401.
+FORDSIM_PASSPHRASE|password|(none)|The password to the cert.pfx file for running on https://localhost:3000.
+FORD_CLIENTSECRET|T_SuperSecret123|(See postman environment variables)|Secret used to authenticate to the FordConnect API servers provided by Ford.
+FORD_CODE|CODE1234-1234-1234|(none)|Typically leave blank. Sets the code value passed to the FordConnect API oauth server when authenticating cloning vehicles.
+FORD_REFERSH|eySomething|(none)|Typeically leave blank. Sets the refresh value passed to the FordConnect API oauth server when authenticating to clone vehicles.
 
 
 ## Known differences between the simulator the FordConnect API
 Error descriptions/messages are not idential to real server, but status codes should match.  See [Known issues](#known-issues).
 
-The oauth2 route is slightly different path than the real route.  Also, the oauth2 route uses the server provided value for the 'code' variable (**not** the real code from authenticating with Ford APIs.)
 
 ## Updating the mock vehicles
 To add a new mock ICE (Internal Combustion Engine) vehicle to the simulator, do the following:
@@ -156,6 +170,12 @@ For more information about the simulation routes, please look in app.js file, se
 |/sim/door/:vehicleId|door, state, role*|door=UNSPECIFIED_FRONT&role=DRIVER&state=OPEN|Opens or closes a door on the vehicle.
 |/sim/alarm/:vehicleId|enabled|enabled=true|Sets the alarm for the vehicle.
 
+## Populating with real vehicles
+If you created a cert.pfx file and set the FORDSIM_PASSPHRASE and FORD_CLIENTSECRET environment variables, then an additional server should be listening on port 3000.  Use your account linking url (https://fordconnect.cv.ford.com/...) and login to FordConnect's FordPass with your username and password.  You will see a list of vehicles you have registered.  Select one of the vehicles that is compatible with the service, then click the "Authorize" button.  This will redirect you back to localhost:3000 and clone all of the vehicle in your account that you authorized.
+
+NOTE: The data displayed is from the clone, it is not updated as the simulator changes state.
+
+Once you have cloned your vehicle, you can invoke [https://localhost:3000/quit](https://localhost:3000/quit) to shut down the listner on port 3000 that clones vehicles.  You would typically do this if your own application has a listener on port 3000.
 
 ## Exposing your simulator on the Internet
 You can expose your simulator from your local development environment onto the internet using ngrok.  To use ngrok, simply follow the directions at https://dashboard.ngrok.com/get-started/setup.  IF you don't already have an account, click "Sign up for free" at the bottom of the login page.  After you signup, you many need to reload the above url.
@@ -182,13 +202,11 @@ npm test
 
 ## Known issues
 The following issues will be addressed in a future update.
-1. A full test pass has not happened yet, since the simulator is under development.
 1. The app.js file has lots of "TEST:", "REVIEW:" and "TODO:" comments, which still need to be addressed.
 1. During error paths the simulator doesn't correctly response to all APIs correctly. For example you may get a HTTP 401 instead of an HTTP 406 status code.
 
 Please report any additional issues at the [github issues](https://github.com/jamisonderek/ford-connect-sim/issues) page.
 
 The following issues are by design and are not planned on being updated:
-1. The route for oath is "/oauth2/v2.0/token" which is different than production.
 1. The messages returned by the simulator are different than production.
 

@@ -2,11 +2,11 @@
 /* eslint-disable no-console */
 
 /**
- * FORD_NGROK environment variable is the domain name of your ngrok server
+ * FORDSIM_NGROK environment variable is the domain name of your ngrok server
  * hosting the simulator.  If it is not set, then the FordConnect API server
  * (*.ford.com) will be used instead.
  */
-const ngrok = process.env.FORD_NGROK;
+const ngrok = process.env.FORDSIM_NGROK;
 
 /**
  * This is the hostname that is used for making the oauth token calls.
