@@ -1852,9 +1852,11 @@ app3000.get('/', async (req, res) => {
   + `<h2><span class="code">${code}</span></h2>`;
   for (let i = 0; i < authVehicleList.length; i += 1) {
     const veh = vehicles.find((v) => v.vehicle.vehicleId === authVehicleList[i].vehicleId);
-    msg += `<h2 class="line">Vehicle id: <span class="vid">${veh.vehicle.vehicleId}</span></h2>`;
-    const engineType = veh.info.engineType === 'ICE' ? 'ICE (Internal Combustion Engine)' : veh.info.engineType;
-    msg += `<table border=1><tr><td class="label">Engine type</td><td class="data">${engineType}</td></tr>`;
+
+    const circle = 'https://raw.githubusercontent.com/jamisonderek/ford-connect-sim/main/images/circle.png';
+    let icon = 'data:image/jpeg;base64,';
+    const filename = `.\\images\\${veh.extra.imageThumbnail}`;
+    icon += fs.readFileSync(filename, 'base64');
     let { make } = veh.info;
     if (make === 'F') {
       make = 'Ford';
@@ -1862,6 +1864,10 @@ app3000.get('/', async (req, res) => {
     if (make === 'L') {
       make = 'Lincoln';
     }
+
+    msg += `<h2 class="line">Vehicle id: <span class="vid">${veh.vehicle.vehicleId}</span></h2>`;
+    const engineType = veh.info.engineType === 'ICE' ? 'ICE (Internal Combustion Engine)' : veh.info.engineType;
+    msg += `<table border=1><tr><td class="label">Engine type</td><td class="data">${engineType}</td></tr>`;
     msg += `<tr><td class="label">Make</td><td class="data">${make}</td></tr>`;
     msg += `<tr><td class="label">Model</td><td class="data">${veh.vehicle.modelYear} ${veh.vehicle.modelName}</td></tr>`;
     const fuelPercent = veh.info.vehicleDetails.fuelLevel.value;
@@ -1875,10 +1881,10 @@ app3000.get('/', async (req, res) => {
     msg += `<a href="https://www.bing.com/maps?cp=${lat}~${lon}&sty=r&lvl=17&FORM=MBEDLD" target="blank">Open map</a></div></td></tr>`;
     msg += '<tr><td colspan=2><div style="height:400px; position:relative">';
     msg += '<iframe style="z-index:1" width="500" height="400" frameborder="0" src="https://www.bing.com/maps/embed?h=400&w=500&';
-    msg += `cp=${lat}~${lon}&lvl=17&typ=d&sty=r&src=SHELL&FORM=MBEDV8" scrolling="no"></iframe>`;
-    const circle = 'https://raw.githubusercontent.com/jamisonderek/ford-connect-sim/main/images/circle.png';
-    msg += `<img style="top:120px; right:200px; position:absolute; z-index:2" width="150" height="150" src="${circle}"></div></td></tr>`;
-    msg += '</table><p>';
+    msg += `cp=${lat}~${lon}&lvl=17&typ=s&sty=r&src=SHELL&FORM=MBEDV8" scrolling="no"></iframe>`;
+    msg += `<img alt="circle showing where vehicle is located" style="top:120px; right:200px; position:absolute; z-index:2" width="150" height="150" src="${circle}">`;
+    msg += `<img alt="picture of ${make} ${veh.vehicle.modelName}" style="top:-200px; right:30px; position:absolute; z-index:-2; opacity:0.1" width="320" src="${icon}">`;
+    msg += '</div></td></tr></table><p>';
   }
 
   msg += '</center></body></html>';
