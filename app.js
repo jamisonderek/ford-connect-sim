@@ -1864,6 +1864,15 @@ app3000.get('/', async (req, res) => {
     if (make === 'L') {
       make = 'Lincoln';
     }
+    const lockMsg = veh.extra.doorsLocked ? 'Locked' : 'Unlocked';
+    const lockClass = veh.extra.doorsLocked ? 'data' : 'data warn';
+    const openDoors = veh.info.vehicleStatus.doorStatus.filter((d) => d.value !== 'CLOSED');
+    let openDoorNames = openDoors.map((d) => ((d.vehicleDoor === 'UNSPECIFIED_FRONT') ? d.vehicleOccupantRole : d.vehicleDoor)).join(',');
+    if (openDoors.length === 0) {
+      openDoorNames = 'None';
+    }
+    const openClass = (openDoors.length === 0) ? 'data' : 'data warn';
+    const carTop = isEV(veh.vehicle.vehicleId) ? -270 : -233;
 
     msg += `<h2 class="line">Vehicle id: <span class="vid">${veh.vehicle.vehicleId}</span></h2>`;
     const engineType = veh.info.engineType === 'ICE' ? 'ICE (Internal Combustion Engine)' : veh.info.engineType;
@@ -1874,6 +1883,19 @@ app3000.get('/', async (req, res) => {
     const fuelKm = veh.info.vehicleDetails.fuelLevel.distanceToEmpty;
     const fuelMi = (parseFloat(fuelKm) * 1.61).toFixed(1);
     msg += `<tr><td class="label">Fuel</td><td class="data">${fuelPercent}% (DTE: ${fuelKm}km/${fuelMi}mi)</td></tr>`;
+    msg += `<tr><td class="label">Doors</td><td class="${lockClass}">${lockMsg}</td></tr>`;
+    msg += `<tr><td class="label">Open doors</td><td class="${openClass}">${openDoorNames}</td></tr>`;
+    if (isEV(veh.vehicle.vehicleId)) {
+      const batteryPercent = veh.info.vehicleDetails.batteryChargeLevel.value;
+      const batteryKm = veh.info.vehicleDetails.batteryChargeLevel.distanceToEmpty;
+      const batteryMi = (parseFloat(batteryKm) * 1.61).toFixed(1);
+      const batteryClass = batteryMi > 50 ? 'data' : 'data warn';
+      const chargeClass = 'data';
+      let chargeMsg = veh.info.vehicleStatus.plugStatus.value ? 'Plugged in ' : 'Not plugged in ';
+      chargeMsg += `(${veh.info.vehicleStatus.chargingStatus.value})`;
+      msg += `<tr><td class="label">EV Battery</td><td class="${batteryClass}">${batteryPercent}% (DTE: ${batteryKm}km/${batteryMi}mi)</td></tr>`;
+      msg += `<tr><td class="label">EV Charger</td><td class="${chargeClass}">${chargeMsg}</td></tr>`;
+    }
     const lat = veh.info.vehicleLocation.latitude;
     const lon = veh.info.vehicleLocation.longitude;
     msg += `<tr><td class="label">Latitude</td><td class="data">${lat}</td></tr>`;
@@ -1883,7 +1905,7 @@ app3000.get('/', async (req, res) => {
     msg += '<iframe style="z-index:1" width="500" height="400" frameborder="0" src="https://www.bing.com/maps/embed?h=400&w=500&';
     msg += `cp=${lat}~${lon}&lvl=17&typ=s&sty=r&src=SHELL&FORM=MBEDV8" scrolling="no"></iframe>`;
     msg += `<img alt="circle showing where vehicle is located" style="top:120px; right:200px; position:absolute; z-index:2" width="150" height="150" src="${circle}">`;
-    msg += `<img alt="picture of ${make} ${veh.vehicle.modelName}" style="top:-200px; right:30px; position:absolute; z-index:-2; opacity:0.1" width="320" src="${icon}">`;
+    msg += `<img alt="picture of ${make} ${veh.vehicle.modelName}" style="top:${carTop}; right:30px; position:absolute; z-index:-2; opacity:0.1" width="320" src="${icon}">`;
     msg += '</div></td></tr></table><p>';
   }
 
