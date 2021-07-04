@@ -1793,8 +1793,10 @@ try {
     passphrase: process.env.FORDSIM_PASSPHRASE,
   };
   const httpServer3000 = https.createServer(options3000, app3000);
-  httpServer3000.listen(3000);
-  console.log('Also listening on port 3000!');
+  if (process.env.NODE_ENV !== 'test') {
+    httpServer3000.listen(3000);
+    console.log('Also listening on port 3000!');
+  }
 
   // This route shuts down the listener on port 3000.  If your application requires port 3000,
   // then once the simulator is populated, you can use this route to shut down the listener
