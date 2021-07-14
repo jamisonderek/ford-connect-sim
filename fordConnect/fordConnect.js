@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 
 /**
- * FordConnet.js exports a bunch of functions for interacting with the FordConnect API.
+ * FordConnect.js exports a bunch of functions for interacting with the FordConnect API.
  *
  * FordConnect.js supports the following environment variables:
  *
