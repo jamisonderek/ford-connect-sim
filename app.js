@@ -1708,7 +1708,6 @@ async function clone(req, res) {
         // augment the data (lat, long, name, desiredChargeLevel)
         const schedules = answers[1].body; // TODO: Augment.
 
-        // TODO: Create EV
         console.log('* CREATE EV *');
         console.log(vehicleId);
         console.log(paramVehicle);
@@ -1813,16 +1812,6 @@ async function showSimulatorSummary(req, res, vehicleList) {
     title = 'Here are your active vehicles.';
 
     vehicleList = vehicles.map((v) => v.vehicle);
-    /*
-    const response = await getVehicles();
-    if (response.statusCode !== 200 || response.body.status !== 'SUCCESS') {
-      res.statusCode = 418;
-      return res.send(`Failed to get list of vehicles.  statusCode was ${response.statusCode}.`);
-    }
-    vehicleList = response.body.vehicles;
-    console.log(JSON.stringify(vehicleList));
-    console.log(`\n\n${JSON.stringify(vehicles)}`);
-    */
   }
 
   const authVehicleList = vehicleList.filter((v) => v.vehicleAuthorizationIndicator);
@@ -1846,7 +1835,7 @@ async function showSimulatorSummary(req, res, vehicleList) {
     let icon = 'data:image/jpeg;base64,';
     const filename = `.\\images\\${veh.extra.imageThumbnail}`;
     icon += fs.readFileSync(filename, 'base64');
-    let { make } = veh.info;
+    let { make } = veh.vehicle;
     if (make === 'F') {
       make = 'Ford';
     }
