@@ -71,7 +71,7 @@ FORDSIM_CMDTIMEOUT|180|120|Number of seconds before a returned commandId value e
 FORDSIM_PASSPHRASE|password|(none)|The password to the cert.pfx file for running on https://localhost:3000.
 FORD_CLIENTSECRET|T_SuperSecret123|(See postman environment variables)|Secret used to authenticate to the FordConnect API servers provided by Ford.
 FORD_CODE|CODE1234-1234-1234|(none)|Typically leave blank. Sets the code value passed to the FordConnect API oauth server when authenticating cloning vehicles.
-FORD_REFERSH|eySomething|(none)|Typeically leave blank. Sets the refresh value passed to the FordConnect API oauth server when authenticating to clone vehicles.
+FORD_REFERSH|eySomething|(none)|Typically leave blank. Sets the refresh value passed to the FordConnect API oauth server when authenticating to clone vehicles.
 
 
 ## Known differences between the simulator the FordConnect API
