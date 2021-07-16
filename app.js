@@ -467,7 +467,7 @@ function oauth(req, res) {
   } else if (req.fields['grant_type'] === 'authorization_code') {
     if (!isValidRedirectUri(req.fields['redirect_uri'])) {
       msg = 'ERROR: invalid redirect_url.';
-    } else if (req.fields['code'] === code) {
+    } else if (req.fields['code'] === code || (code === '*' && req.fields['code'])) {
       if (Date.now() < codeExpireTimestamp) {
         return sendRefreshTokenResponse(req, res);
       }

@@ -65,7 +65,7 @@ When the simulator starts, it will look for the following optional environment v
 |variable|example value|default value|notes|
 |--------|-------------|-------------|-----|
 FORDSIM_HTTPPORT|80|80|The HTTP port that the service will listen on.
-FORDSIM_CODE|SomeCode|auto-generated|The code needed for the initial call to the oauth2 service. You can enter any special access code.  The code will be good for 20 minutes. This value will be displayed when the server starts.
+FORDSIM_CODE|SomeCode|auto-generated|The code needed for the initial call to the oauth2 service. You can enter any special access code.  The code will be good for 20 minutes. This value will be displayed when the server starts.  If you enter * as the code, then any code will be accepted.
 FORDSIM_TOKEN|SomeToken|auto-generated|The code needed for invoking APIs. Typically it is preferred that the caller use the oauth2 route to retrieve the token, but for initial testing this value may be used. This will be displayed when the server starts if it was set by the user. 
 FORDSIM_TIMEOUT|300|1200|Number of seconds before code + access token expire.  Reducing this value is useful for testing your application's ability to refresh the token.  Generally, you should also update your application to have the same thresholds (so you are auto-refreshing the token instead of getting a access token expired message).
 FORDSIM_CMDTIMEOUT|180|120|Number of seconds before a returned commandId value expires and return HTTP 401.
@@ -174,7 +174,7 @@ If you created a cert.pfx file and set the FORDSIM_PASSPHRASE and FORD_CLIENTSEC
 
 NOTE: The data displayed is from the clone, it is **not** updated as the simulator changes state.
 
-Once you have cloned your vehicle, you can invoke [https://localhost:3000/quit](https://localhost:3000/quit) to shut down the listner on port 3000 that clones vehicles.  You would typically do this if your own application also has a listener on port 3000.
+Once you have cloned your vehicle, you can invoke [https://localhost:3000/quit](https://localhost:3000/quit) to shut down the listner on port 3000 that clones vehicles.  You would typically do this if your own application also has a listener on port 3000.  If you have a real auth flow in your app, it is recommended you set FORDSIM_CODE to * so that you can pass your auth requests to the simmulator.
 
 ## Exposing your simulator on the Internet
 You can expose your simulator from your local development environment onto the internet using ngrok.  To use ngrok, simply follow the directions at https://dashboard.ngrok.com/get-started/setup.  If you don't already have an account, click "Sign up for free" at the bottom of the login page.  After you signup, you many need to reload the above url.
