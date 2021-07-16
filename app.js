@@ -1777,10 +1777,6 @@ app.get('/sim', (req, res) => {
   res.json(vehicles);
 });
 
-app.use((req, res) => {
-  res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
-});
-
 const app3000 = express();
 
 // Ccreate a PFX cert file in Windows by downloading the tool at...
@@ -1810,55 +1806,37 @@ try {
   console.log(`Error starting HTTPS server. ${err}`);
 }
 
-// This route gets called by the auth callback.  It will clone the vehicles.
-//
-// expected status: 200 (success) ,400 (bad code), 418 (failed getting data)
-app3000.get('/', async (req, res) => {
-  const authCode = req.query.code;
+async function showSimulatorSummary(req, res, vehicleList) {
+  let title = 'Your vehicles are cloned';
 
-  if (!await updateTokenFromCode(authCode)) {
-    res.statusCode = 400;
-    return res.send('The code parameter was invalid.');
-  }
+  if (vehicleList === undefined) {
+    title = 'Here are your active vehicles.';
 
-  if (!await refreshToken(getAccessTokenTimeout(), undefined)) {
-    res.statusCode = 400;
-    return res.send('Failed to refresh token using refresh_token.');
-  }
-
-  const response = await getVehicles();
-  if (response.statusCode !== 200 || response.body.status !== 'SUCCESS') {
-    res.statusCode = 418;
-    return res.send(`Failed to get list of vehicles.  statusCode was ${response.statusCode}.`);
-  }
-  const vehicleList = response.body.vehicles;
-
-  const clonedRes = {
-    statusCode: 0,
-    json: () => { },
-  };
-  await clone(req, clonedRes);
-  if (clonedRes.statusCode !== 200) {
-    res.statusCode = clonedRes.statusCode;
-    return res.send(`Failed to clone vehicles.  statusCode was ${clonedRes.statusCode}`);
+    vehicleList = vehicles.map((v) => v.vehicle);
+    /*
+    const response = await getVehicles();
+    if (response.statusCode !== 200 || response.body.status !== 'SUCCESS') {
+      res.statusCode = 418;
+      return res.send(`Failed to get list of vehicles.  statusCode was ${response.statusCode}.`);
+    }
+    vehicleList = response.body.vehicles;
+    console.log(JSON.stringify(vehicleList));
+    console.log(`\n\n${JSON.stringify(vehicles)}`);
+    */
   }
 
   const authVehicleList = vehicleList.filter((v) => v.vehicleAuthorizationIndicator);
-  if (authVehicleList.length === 0) {
-    res.statusCode = 418;
-    return res.send('No authorized vehicles cloned.');
-  }
 
   // Create a new code and reset the timer on the code.
   code = `Code${makeGuid()}`;
   codeExpireTimestamp = Date.now() + getCodeTimeout() * 1000;
 
-  let msg = '<html><head><title>Your vehicles are cloned</title>';
+  let msg = `<html><head><title>${title}</title>`;
   msg += '<style>body{font-family:Tahoma,Geneva,sans-serif;color:#0276B3;}'
   + '.code{background-color:#ffff92;}.vid{background-color:#e8f0fe;}'
   + '.line{margin-top:25px;}.warn{color:#000;background-color:#ffc7e3;}'
   + 'table{font-size:25px;}h2{margin-top: 5px;margin-bottom: 0px;}'
-  + '</style></head><body><center><h1>Your vehicles are cloned.</h1>'
+  + `</style></head><body><center><h1>${title}</h1>`
   + '<h2>The simulator&apos;s authorization code is :</h2>'
   + `<h2><span class="code">${code}</span></h2>`;
   for (let i = 0; i < authVehicleList.length; i += 1) {
@@ -1924,6 +1902,54 @@ app3000.get('/', async (req, res) => {
 
   res.statusCode = 200;
   return res.send(msg);
+}
+
+// This route gets called by the auth callback.  It will clone the vehicles.
+//
+// expected status: 200 (success) ,400 (bad code), 418 (failed getting data)
+app3000.get('/', async (req, res) => {
+  const authCode = req.query.code;
+
+  if (!await updateTokenFromCode(authCode)) {
+    res.statusCode = 400;
+    return res.send('The code parameter was invalid.');
+  }
+
+  if (!await refreshToken(getAccessTokenTimeout(), undefined)) {
+    res.statusCode = 400;
+    return res.send('Failed to refresh token using refresh_token.');
+  }
+
+  const response = await getVehicles();
+  if (response.statusCode !== 200 || response.body.status !== 'SUCCESS') {
+    res.statusCode = 418;
+    return res.send(`Failed to get list of vehicles.  statusCode was ${response.statusCode}.`);
+  }
+  const vehicleList = response.body.vehicles;
+
+  const clonedRes = {
+    statusCode: 0,
+    json: () => { },
+  };
+  await clone(req, clonedRes);
+  if (clonedRes.statusCode !== 200) {
+    res.statusCode = clonedRes.statusCode;
+    return res.send(`Failed to clone vehicles.  statusCode was ${clonedRes.statusCode}`);
+  }
+
+  const authVehicleList = vehicleList.filter((v) => v.vehicleAuthorizationIndicator);
+  if (authVehicleList.length === 0) {
+    res.statusCode = 418;
+    return res.send('No authorized vehicles cloned.');
+  }
+
+  return showSimulatorSummary(req, res, vehicleList);
+});
+
+app.get('/sim/html', (req, res) => showSimulatorSummary(req, res, undefined));
+
+app.use((req, res) => {
+  res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
 });
 
 app3000.use((req, res) => {
