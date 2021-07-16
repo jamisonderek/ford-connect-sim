@@ -1850,7 +1850,8 @@ async function showSimulatorSummary(req, res, vehicleList) {
       openDoorNames = 'None';
     }
     const openClass = (openDoors.length === 0) ? 'data' : 'data warn';
-    const carTop = isEV(veh.vehicle.vehicleId) ? -270 : -233;
+    const carTop = isEV(veh.info.engineType) ? -270 : -233;
+    console.log(JSON.stringify(veh.info));
 
     msg += `<h2 class="line">Vehicle id: <span class="vid">${veh.vehicle.vehicleId}</span></h2>`;
     const engineType = veh.info.engineType === 'ICE' ? 'ICE (Internal Combustion Engine)' : veh.info.engineType;
@@ -1863,7 +1864,7 @@ async function showSimulatorSummary(req, res, vehicleList) {
     msg += `<tr><td class="label">Fuel</td><td class="data">${fuelPercent}% (DTE: ${fuelKm}km/${fuelMi}mi)</td></tr>`;
     msg += `<tr><td class="label">Doors</td><td class="${lockClass}">${lockMsg}</td></tr>`;
     msg += `<tr><td class="label">Open doors</td><td class="${openClass}">${openDoorNames}</td></tr>`;
-    if (isEV(veh.vehicle.vehicleId)) {
+    if (isEV(veh.info.engineType)) {
       const batteryPercent = veh.info.vehicleDetails.batteryChargeLevel.value;
       const batteryKm = veh.info.vehicleDetails.batteryChargeLevel.distanceToEmpty;
       const batteryMi = (parseFloat(batteryKm) * 1.61).toFixed(1);
