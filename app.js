@@ -1871,14 +1871,14 @@ async function showSimulatorSummary(req, res, vehicleList) {
     msg += `<tr><td class="label">Model</td><td class="data">${veh.vehicle.modelYear} ${veh.vehicle.modelName}</td></tr>`;
     const fuelPercent = veh.info.vehicleDetails.fuelLevel.value;
     const fuelKm = veh.info.vehicleDetails.fuelLevel.distanceToEmpty;
-    const fuelMi = (parseFloat(fuelKm) * 1.61).toFixed(1);
+    const fuelMi = (parseFloat(fuelKm) / 1.61).toFixed(1);
     msg += `<tr><td class="label">Fuel</td><td class="data">${fuelPercent}% (DTE: ${fuelKm}km/${fuelMi}mi)</td></tr>`;
     msg += `<tr><td class="label">Doors</td><td class="${lockClass}">${lockMsg}</td></tr>`;
     msg += `<tr><td class="label">Open doors</td><td class="${openClass}">${openDoorNames}</td></tr>`;
     if (isEV(veh.info.engineType)) {
       const batteryPercent = veh.info.vehicleDetails.batteryChargeLevel.value;
       const batteryKm = veh.info.vehicleDetails.batteryChargeLevel.distanceToEmpty;
-      const batteryMi = (parseFloat(batteryKm) * 1.61).toFixed(1);
+      const batteryMi = (parseFloat(batteryKm) / 1.61).toFixed(1);
       const batteryClass = batteryMi > 50 ? 'data' : 'data warn';
       const chargeClass = 'data';
       let chargeMsg = veh.info.vehicleStatus.plugStatus.value ? 'Plugged in ' : 'Not plugged in ';
