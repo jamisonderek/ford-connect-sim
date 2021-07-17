@@ -1679,6 +1679,7 @@ async function clone(req, res) {
       streamFull = createWriteStream(`images\\${vehicleId}-thumb.png`, { encoding: 'binary' });
       streamFull.write(answers[2].body);
       streamFull.end();
+      // TODO: Wait for the finish events of both files.
 
       // If isEV then
       if (isEV(paramDetails.engineType)) {
@@ -1834,7 +1835,12 @@ async function showSimulatorSummary(req, res, vehicleList) {
     const circle = 'https://raw.githubusercontent.com/jamisonderek/ford-connect-sim/main/images/circle.png';
     let icon = 'data:image/jpeg;base64,';
     const filename = `.\\images\\${veh.extra.imageThumbnail}`;
-    icon += fs.readFileSync(filename, 'base64');
+    try {
+      icon += fs.readFileSync(filename, 'base64');
+    } catch (e) {
+      console.error(`ERROR WITH THUMBNAIL:  ${e}`);
+      icon = undefined;
+    }
     let { make } = veh.vehicle;
     if (make === 'F') {
       make = 'Ford';
@@ -1884,7 +1890,9 @@ async function showSimulatorSummary(req, res, vehicleList) {
     msg += '<iframe style="z-index:1" width="500" height="400" frameborder="0" src="https://www.bing.com/maps/embed?h=400&w=500&';
     msg += `cp=${lat}~${lon}&lvl=17&typ=s&sty=r&src=SHELL&FORM=MBEDV8" scrolling="no"></iframe>`;
     msg += `<img alt="circle showing where vehicle is located" style="top:120px; right:200px; position:absolute; z-index:2" width="150" height="150" src="${circle}">`;
-    msg += `<img alt="picture of ${make} ${veh.vehicle.modelName}" style="top:${carTop}; right:30px; position:absolute; z-index:-2; opacity:0.1" width="320" src="${icon}">`;
+    if (icon !== undefined) {
+      msg += `<img alt="picture of ${make} ${veh.vehicle.modelName}" style="top:${carTop}; right:30px; position:absolute; z-index:-2; opacity:0.1" width="320" src="${icon}">`;
+    }
     msg += '</div></td></tr></table><p>';
   }
 
