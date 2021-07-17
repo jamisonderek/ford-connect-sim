@@ -1818,8 +1818,13 @@ async function showSimulatorSummary(req, res, vehicleList) {
   const authVehicleList = vehicleList.filter((v) => v.vehicleAuthorizationIndicator);
 
   // Create a new code and reset the timer on the code.
-  code = `Code${makeGuid()}`;
+  const newCode = `Code${makeGuid()}`;
   codeExpireTimestamp = Date.now() + getCodeTimeout() * 1000;
+
+  // If code was wildcard, don't reset it.
+  if (code !=='*') {
+    code = newCode;
+  }
 
   let msg = `<html><head><title>${title}</title>`;
   msg += '<style>body{font-family:Tahoma,Geneva,sans-serif;color:#0276B3;}'
@@ -1828,7 +1833,7 @@ async function showSimulatorSummary(req, res, vehicleList) {
   + 'table{font-size:25px;}h2{margin-top: 5px;margin-bottom: 0px;}'
   + `</style></head><body><center><h1>${title}</h1>`
   + '<h2>The simulator&apos;s authorization code is :</h2>'
-  + `<h2><span class="code">${code}</span></h2>`;
+  + `<h2><span class="code">${newCode}</span></h2>`;
   for (let i = 0; i < authVehicleList.length; i += 1) {
     const veh = vehicles.find((v) => v.vehicle.vehicleId === authVehicleList[i].vehicleId);
 

@@ -11,6 +11,15 @@ This simulator is intented to run on your local development environment exposing
 
 This simulator was created to try to assist engineers that are using the FordConnect API but don't have access to a physical vehicle for test scenarios.  Development for this simulator was done without having a physical vehicle connected to the FordConnect API, so there are possible discrepancies.  Please report any issues at the [github issues](https://github.com/jamisonderek/ford-connect-sim/issues) page.  In addition to testing your application using the simulator, please ensure you test your application against the real FordConnect API.
 
+## Getting started videos
+- [Install Git video](https://youtu.be/acHYLM3eUbY)
+- [Install Node.js video](https://youtu.be/vFokn3ja6I8)
+- [Install ngrok video](https://youtu.be/Z679UY8eeuA)
+- [Install ford-connect-sim video](https://youtu.be/jhkv98UCGf8)
+- [Using ford-connect-sim with Postman video](https://youtu.be/Mm236mLXb7Q)
+- [3 minute tech demo of ford-connect-sim](https://youtu.be/UrRd6DkDUL0)
+- [15 minute Uneditied walkthru](https://youtu.be/PYbG9R5uZPs)
+
 ## Starting the simulator
 This project requires you have [Node.js](https://nodejs.org/en/download/) and npm installed.  This version was developed and testing using Node version 15.5.1, npm 7.17.0 and Windows 10 (19042.1052).  You can check your versions by using the following command:
 ```
