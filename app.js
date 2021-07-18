@@ -79,6 +79,23 @@ const {
 const app = express();
 
 /**
+ * This is a wrapper for all of the async app calls, so exceptions get forwared on to the next
+ * handler.
+ *
+ * @param {*} fn the async function to wrap.
+ * @returns a wrapped function.
+ */
+function asyncAppWrapper(fn) {
+  if (process.env.NODE_ENV !== 'test') {
+    return (req, res, next) => {
+      fn(req, res, next).catch(next);
+    };
+  }
+
+  return (req, res, next) => { fn(req, res, next); };
+}
+
+/**
  * Returns an object with extra properties about the vehicle.  Most of the properties can be
  * used to determine the current state of the vehicle.
  *
@@ -485,10 +502,10 @@ function oauth(req, res) {
   return res.json({ error: 'invalid request', error_description: msg });
 }
 
-app.post('/oauth2/v2.0/token', (req, res) => oauth(req, res));
-app.post('/:guid/oauth2/v2.0/token', (req, res) => oauth(req, res));
+app.post('/oauth2/v2.0/token', asyncAppWrapper((req, res) => oauth(req, res)));
+app.post('/:guid/oauth2/v2.0/token', asyncAppWrapper((req, res) => oauth(req, res)));
 
-app.get('/api/fordconnect/vehicles/v1', (req, res) => {
+app.get('/api/fordconnect/vehicles/v1', asyncAppWrapper((req, res) => {
   if (!isValidApplicationId(req)) {
     return sendInvalidApplicationId(req, res);
   }
@@ -498,7 +515,7 @@ app.get('/api/fordconnect/vehicles/v1', (req, res) => {
   }
 
   return res.json({ status: 'SUCCESS', vehicles: vehicles.map((v) => v.vehicle) });
-});
+}));
 
 /**
  * Checks if a vehicle supports EV functions.
@@ -669,31 +686,31 @@ function vehicleIdGetImage(req, res, fn) {
   return undefined; // getVehicleOrSendError send response.
 }
 
-app.post('/api/fordconnect/vehicles/v1/:vehicleId/unlock', (req, res) => {
+app.post('/api/fordconnect/vehicles/v1/:vehicleId/unlock', asyncAppWrapper((req, res) => {
   vehicleIdPostMethod(req, res, false, (_req, _res, match, command) => {
     commands.unlock.push(command);
     match.extra.doorsLocked = false;
     match.extra.doorsLockedTimestamp = timestamp.now();
   });
-});
+}));
 
-app.get('/api/fordconnect/vehicles/v1/:vehicleId/unlock/:commandId', (req, res) => {
+app.get('/api/fordconnect/vehicles/v1/:vehicleId/unlock/:commandId', asyncAppWrapper((req, res) => {
   vehicleIdGetCommandStatus(req, res, commands.unlock, () => { });
-});
+}));
 
-app.post('/api/fordconnect/vehicles/v1/:vehicleId/lock', (req, res) => {
+app.post('/api/fordconnect/vehicles/v1/:vehicleId/lock', asyncAppWrapper((req, res) => {
   vehicleIdPostMethod(req, res, false, (_req, _res, match, command) => {
     commands.lock.push(command);
     match.extra.doorsLocked = true;
     match.extra.doorsLockedTimestamp = timestamp.now();
   });
-});
+}));
 
-app.get('/api/fordconnect/vehicles/v1/:vehicleId/lock/:commandId', (req, res) => {
+app.get('/api/fordconnect/vehicles/v1/:vehicleId/lock/:commandId', asyncAppWrapper((req, res) => {
   vehicleIdGetCommandStatus(req, res, commands.lock, () => { });
-});
+}));
 
-app.post('/api/fordconnect/vehicles/v1/:vehicleId/startEngine', (req, res) => {
+app.post('/api/fordconnect/vehicles/v1/:vehicleId/startEngine', asyncAppWrapper((req, res) => {
   vehicleIdPostMethod(req, res, false, (_req, _res, match, command) => {
     commands.startEngine.push(command);
     match.extra.lastStarted = Date.now();
@@ -704,13 +721,13 @@ app.post('/api/fordconnect/vehicles/v1/:vehicleId/startEngine', (req, res) => {
     };
     match.info.vehicleStatus.ignitionStatus.value = 'ON';
   });
-});
+}));
 
-app.get('/api/fordconnect/vehicles/v1/:vehicleId/startEngine/:commandId', (req, res) => {
+app.get('/api/fordconnect/vehicles/v1/:vehicleId/startEngine/:commandId', asyncAppWrapper((req, res) => {
   vehicleIdGetCommandStatus(req, res, commands.startEngine, () => { });
-});
+}));
 
-app.post('/api/fordconnect/vehicles/v1/:vehicleId/stopEngine', (req, res) => {
+app.post('/api/fordconnect/vehicles/v1/:vehicleId/stopEngine', asyncAppWrapper((req, res) => {
   vehicleIdPostMethod(req, res, false, (_req, _res, match, command) => {
     commands.stopEngine.push(command);
     match.extra.lastStarted = Date.now();
@@ -721,32 +738,32 @@ app.post('/api/fordconnect/vehicles/v1/:vehicleId/stopEngine', (req, res) => {
     };
     match.info.vehicleStatus.ignitionStatus.value = 'OFF';
   });
-});
+}));
 
-app.get('/api/fordconnect/vehicles/v1/:vehicleId/stopEngine/:commandId', (req, res) => {
+app.get('/api/fordconnect/vehicles/v1/:vehicleId/stopEngine/:commandId', asyncAppWrapper((req, res) => {
   vehicleIdGetCommandStatus(req, res, commands.stopEngine, () => { });
-});
+}));
 
-app.post('/api/fordconnect/vehicles/v1/:vehicleId/wake', (req, res) => {
+app.post('/api/fordconnect/vehicles/v1/:vehicleId/wake', asyncAppWrapper((req, res) => {
   vehicleIdPostMethod(req, res, false, (_req, _res, match, command) => {
     commands.wake.push(command);
     match.extra.lastWake = Date.now();
   });
-});
+}));
 
-app.post('/api/fordconnect/vehicles/v1/:vehicleId/startCharge', (req, res) => {
+app.post('/api/fordconnect/vehicles/v1/:vehicleId/startCharge', asyncAppWrapper((req, res) => {
   vehicleIdPostMethod(req, res, true, (_req, _res, match, command) => {
     commands.startCharge.push(command);
     match.extra.lastStartCharge = Date.now();
   });
-});
+}));
 
-app.post('/api/fordconnect/vehicles/v1/:vehicleId/stopCharge', (req, res) => {
+app.post('/api/fordconnect/vehicles/v1/:vehicleId/stopCharge', asyncAppWrapper((req, res) => {
   vehicleIdPostMethod(req, res, true, (_req, _res, match, command) => {
     commands.stopCharge.push(command);
     match.extra.lastStopCharge = Date.now();
   });
-});
+}));
 
 /**
  * Compares two coordinates (lat, long) to see if they are 'near' each other.
@@ -763,7 +780,7 @@ function near(lat1, long1, lat2, long2) {
   return Math.abs(lat1 - lat2) < 0.001 && Math.abs(long1 - long2) < 0.001;
 }
 
-app.get('/api/fordconnect/vehicles/v1/:vehicleId/chargeSchedules', (req, res) => {
+app.get('/api/fordconnect/vehicles/v1/:vehicleId/chargeSchedules', asyncAppWrapper((req, res) => {
   if (!isValidApplicationId(req)) {
     return sendInvalidApplicationId(req, res);
   }
@@ -809,7 +826,7 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/chargeSchedules', (req, res) =>
   }
 
   return undefined; // getVehicleOrSendError send response.
-});
+}));
 
 const DAYS = {
   MONDAY: 1,
@@ -850,7 +867,7 @@ function msUntilDepartureTime(departureTime) {
 }
 
 // Returns the next departure time.
-app.get('/api/fordconnect/vehicles/v1/:vehicleId/departureTimes', (req, res) => {
+app.get('/api/fordconnect/vehicles/v1/:vehicleId/departureTimes', asyncAppWrapper((req, res) => {
   if (!isValidApplicationId(req)) {
     return sendInvalidApplicationId(req, res);
   }
@@ -905,15 +922,15 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/departureTimes', (req, res) => 
   }
 
   return undefined; // getVehicleOrSendError send response.
-});
+}));
 
-app.post('/api/fordconnect/vehicles/v1/:vehicleId/status', (req, res) => {
+app.post('/api/fordconnect/vehicles/v1/:vehicleId/status', asyncAppWrapper((req, res) => {
   vehicleIdPostMethod(req, res, false, (_req, _res, match, command) => {
     commands.status.push(command);
   });
-});
+}));
 
-app.get('/api/fordconnect/vehicles/v1/:vehicleId/statusrefresh/:commandId', (req, res) => {
+app.get('/api/fordconnect/vehicles/v1/:vehicleId/statusrefresh/:commandId', asyncAppWrapper((req, res) => {
   vehicleIdGetCommandStatus(req, res, commands.status, (_, __, match, command, response) => {
     if (command.commandStatus === 'COMPLETED') {
       let doorsLocked = match.extra.doorsLocked ? 'LOCKED' : 'UNLOCKED';
@@ -938,9 +955,9 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/statusrefresh/:commandId', (req
       };
     }
   }, 202);
-});
+}));
 
-app.get('/api/fordconnect/vehicles/v1/:vehicleId', (req, res) => {
+app.get('/api/fordconnect/vehicles/v1/:vehicleId', asyncAppWrapper((req, res) => {
   if (!isValidApplicationId(req)) {
     return sendInvalidApplicationId(req, res);
   }
@@ -965,16 +982,16 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId', (req, res) => {
   }
 
   return undefined; // getVehicleOrSendError send response.
-});
+}));
 
-app.post('/api/fordconnect/vehicles/v1/:vehicleId/location', (req, res) => {
+app.post('/api/fordconnect/vehicles/v1/:vehicleId/location', asyncAppWrapper((req, res) => {
   vehicleIdPostMethod(req, res, false, (_req, _res, match, command) => {
     // NOTE: This commandId isn't used for anything by FordConnect API.
     commands.location.push(command);
   });
-});
+}));
 
-app.get('/api/fordconnect/vehicles/v1/:vehicleId/location', (req, res) => {
+app.get('/api/fordconnect/vehicles/v1/:vehicleId/location', asyncAppWrapper((req, res) => {
   if (!isValidApplicationId(req)) {
     return sendInvalidApplicationId(req, res);
   }
@@ -999,15 +1016,15 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/location', (req, res) => {
   }
 
   return undefined; // getVehicleOrSendError send response.
-});
+}));
 
-app.get('/api/fordconnect/vehicles/v1/:vehicleId/images/full', (req, res) => {
+app.get('/api/fordconnect/vehicles/v1/:vehicleId/images/full', asyncAppWrapper((req, res) => {
   vehicleIdGetImage(req, res, (match) => match.extra.image);
-});
+}));
 
-app.get('/api/fordconnect/vehicles/v1/:vehicleId/images/thumbnail', (req, res) => {
+app.get('/api/fordconnect/vehicles/v1/:vehicleId/images/thumbnail', asyncAppWrapper((req, res) => {
   vehicleIdGetImage(req, res, (match) => match.extra.imageThumbnail);
-});
+}));
 
 // Set the simulator's today value (used for determining the next departure time.)
 //
@@ -1016,7 +1033,7 @@ app.get('/api/fordconnect/vehicles/v1/:vehicleId/images/thumbnail', (req, res) =
 // expected status: 200 (success), 400 (bad parameter)
 //
 // example query: /sim/today?day=FRIDAY&time=13:15
-app.post('/sim/today', (req, res) => {
+app.post('/sim/today', asyncAppWrapper((req, res) => {
   const { day } = req.query;
   const { time } = req.query;
 
@@ -1050,7 +1067,7 @@ app.post('/sim/today', (req, res) => {
     status: 'SUCCESS',
     msg: 'Date set successfully.',
   });
-});
+}));
 
 // Sets the tirePressureWarning on a vehicle.
 //
@@ -1058,7 +1075,7 @@ app.post('/sim/today', (req, res) => {
 // expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
 //
 // example query: /sim/psi/22221111111111151111111111112222?warning=true
-app.post('/sim/psi/:vehicleId', (req, res) => {
+app.post('/sim/psi/:vehicleId', asyncAppWrapper((req, res) => {
   const { warning } = req.query;
   const match = getVehicleOrSendError(req, res);
 
@@ -1083,7 +1100,7 @@ app.post('/sim/psi/:vehicleId', (req, res) => {
   }
 
   return undefined;
-});
+}));
 
 // Sets the modem on a vehicle.
 //
@@ -1091,7 +1108,7 @@ app.post('/sim/psi/:vehicleId', (req, res) => {
 // expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
 //
 // example query: /sim/modem/22221111111111151111111111112222?enabled=false
-app.post('/sim/modem/:vehicleId', (req, res) => {
+app.post('/sim/modem/:vehicleId', asyncAppWrapper((req, res) => {
   const { enabled } = req.query;
   const match = getVehicleOrSendError(req, res);
 
@@ -1117,7 +1134,7 @@ app.post('/sim/modem/:vehicleId', (req, res) => {
   }
 
   return undefined;
-});
+}));
 
 // Sets the deep sleep for the vehicle.
 //
@@ -1125,7 +1142,7 @@ app.post('/sim/modem/:vehicleId', (req, res) => {
 // expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
 //
 // example query: /sim/deepsleep/22221111111111151111111111112222?sleep=false
-app.post('/sim/deepsleep/:vehicleId', (req, res) => {
+app.post('/sim/deepsleep/:vehicleId', asyncAppWrapper((req, res) => {
   const { sleep } = req.query;
   const match = getVehicleOrSendError(req, res);
 
@@ -1151,7 +1168,7 @@ app.post('/sim/deepsleep/:vehicleId', (req, res) => {
   }
 
   return undefined;
-});
+}));
 
 // Sets the firmwareUpgradeInProgess on a vehicle.
 //
@@ -1159,7 +1176,7 @@ app.post('/sim/deepsleep/:vehicleId', (req, res) => {
 // expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
 //
 // example query: /sim/firmware/22221111111111151111111111112222?upgrade=true
-app.post('/sim/firmware/:vehicleId', (req, res) => {
+app.post('/sim/firmware/:vehicleId', asyncAppWrapper((req, res) => {
   const { upgrade } = req.query;
   const match = getVehicleOrSendError(req, res);
 
@@ -1184,7 +1201,7 @@ app.post('/sim/firmware/:vehicleId', (req, res) => {
   }
 
   return undefined;
-});
+}));
 
 // Sets the plug status on an EV vehicle.
 //
@@ -1192,7 +1209,7 @@ app.post('/sim/firmware/:vehicleId', (req, res) => {
 // expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
 //
 // example query: /sim/plug/22221111111111151111111111112222?connected=true
-app.post('/sim/plug/:vehicleId', (req, res) => {
+app.post('/sim/plug/:vehicleId', asyncAppWrapper((req, res) => {
   const { connected } = req.query;
   const match = getVehicleOrSendError(req, res);
 
@@ -1227,7 +1244,7 @@ app.post('/sim/plug/:vehicleId', (req, res) => {
   }
 
   return undefined;
-});
+}));
 
 // Sets the ignition status on the vehicle.
 //
@@ -1235,7 +1252,7 @@ app.post('/sim/plug/:vehicleId', (req, res) => {
 // expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
 //
 // example query: /sim/ignition/22221111111111151111111111112222?value=on
-app.post('/sim/ignition/:vehicleId', (req, res) => {
+app.post('/sim/ignition/:vehicleId', asyncAppWrapper((req, res) => {
   const { value } = req.query;
   const match = getVehicleOrSendError(req, res);
 
@@ -1262,7 +1279,7 @@ app.post('/sim/ignition/:vehicleId', (req, res) => {
   }
 
   return undefined;
-});
+}));
 
 // Sets the fuel level on an ICE vehicle.
 //
@@ -1271,7 +1288,7 @@ app.post('/sim/ignition/:vehicleId', (req, res) => {
 // expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
 //
 // example query: /sim/fuel/12341234123412341234123412341234?level=100.0&dte=700.0
-app.post('/sim/fuel/:vehicleId', (req, res) => {
+app.post('/sim/fuel/:vehicleId', asyncAppWrapper((req, res) => {
   const { level } = req.query;
   const { dte } = req.query;
   const match = getVehicleOrSendError(req, res);
@@ -1316,7 +1333,7 @@ app.post('/sim/fuel/:vehicleId', (req, res) => {
   }
 
   return undefined;
-});
+}));
 
 // Sets the battery level on an EV vehicle.
 //
@@ -1325,7 +1342,7 @@ app.post('/sim/fuel/:vehicleId', (req, res) => {
 // expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
 //
 // example query: /sim/battery/22221111111111151111111111112222?level=100.0&dte=400.0
-app.post('/sim/battery/:vehicleId', (req, res) => {
+app.post('/sim/battery/:vehicleId', asyncAppWrapper((req, res) => {
   const { level } = req.query;
   const { dte } = req.query;
   const match = getVehicleOrSendError(req, res);
@@ -1370,7 +1387,7 @@ app.post('/sim/battery/:vehicleId', (req, res) => {
   }
 
   return undefined;
-});
+}));
 
 // Sets the location of a vehicle.
 //
@@ -1383,7 +1400,7 @@ app.post('/sim/battery/:vehicleId', (req, res) => {
 //
 // example query:
 //  /sim/location/22221111111111151111111111112222?lat=36.105539&long=-95.885703&distance=3.1
-app.post('/sim/location/:vehicleId', (req, res) => {
+app.post('/sim/location/:vehicleId', asyncAppWrapper((req, res) => {
   const { lat } = req.query;
   const { long } = req.query;
   const { distance } = req.query;
@@ -1453,7 +1470,7 @@ app.post('/sim/location/:vehicleId', (req, res) => {
   }
 
   return undefined;
-});
+}));
 
 // Opens or closes a door on the vehicle.
 //
@@ -1464,7 +1481,7 @@ app.post('/sim/location/:vehicleId', (req, res) => {
 //
 // example query:
 //  /sim/door/22221111111111151111111111112222?door=UNSPECIFIED_FRONT&role=DRIVER&state=OPEN
-app.post('/sim/door/:vehicleId', (req, res) => {
+app.post('/sim/door/:vehicleId', asyncAppWrapper((req, res) => {
   let { door } = req.query;
   let { state } = req.query;
   const { role } = req.query;
@@ -1532,7 +1549,7 @@ app.post('/sim/door/:vehicleId', (req, res) => {
   }
 
   return undefined;
-});
+}));
 
 // Sets the alarm for the vehicle.
 //
@@ -1541,7 +1558,7 @@ app.post('/sim/door/:vehicleId', (req, res) => {
 // expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
 //
 // example query: /sim/alarm/22221111111111151111111111112222?state=enabled
-app.post('/sim/alarm/:vehicleId', (req, res) => {
+app.post('/sim/alarm/:vehicleId', asyncAppWrapper((req, res) => {
   let { state } = req.query;
   const { enabled } = req.query;
   const setting = toBoolean(enabled);
@@ -1581,7 +1598,7 @@ app.post('/sim/alarm/:vehicleId', (req, res) => {
   }
 
   return undefined;
-});
+}));
 
 // Sets the door locks for the vehicle.
 //
@@ -1589,7 +1606,7 @@ app.post('/sim/alarm/:vehicleId', (req, res) => {
 // expected status: 200 (success), 400 (bad parameter), 4xx (bad vehicleId)
 //
 // example query: /sim/locks/22221111111111151111111111112222?state=error
-app.post('/sim/locks/:vehicleId', (req, res) => {
+app.post('/sim/locks/:vehicleId', asyncAppWrapper((req, res) => {
   let { state } = req.query;
   if (state !== undefined) {
     state = state.toLowerCase();
@@ -1623,7 +1640,7 @@ app.post('/sim/locks/:vehicleId', (req, res) => {
   }
 
   return undefined;
-});
+}));
 
 async function clone(req, res) {
   const clones = [];
@@ -1747,7 +1764,7 @@ async function clone(req, res) {
 //
 // body: [refresh_token] Your real FordConnect API refresh token.
 // expected status: 200 (success), 400 (bad parameter)
-app.post('/sim/clone', async (req, res) => {
+app.post('/sim/clone', asyncAppWrapper(async (req, res) => {
   const actualRefreshToken = req.fields['refresh_token'];
   if (actualRefreshToken === undefined) {
     res.statusCode = 400;
@@ -1761,15 +1778,15 @@ app.post('/sim/clone', async (req, res) => {
   await refreshToken(getAccessTokenTimeout(), actualRefreshToken);
 
   return clone(req, res);
-});
+}));
 
 // Returns the simulators current vehicle model.
 //
 // expected status: 200 (success)
-app.get('/sim', (req, res) => {
+app.get('/sim', asyncAppWrapper((req, res) => {
   res.statusCode = 200;
   res.json(vehicles);
-});
+}));
 
 const app3000 = express();
 
@@ -1903,7 +1920,7 @@ async function showSimulatorSummary(req, res, vehicleList) {
 // This route gets called by the auth callback.  It will clone the vehicles.
 //
 // expected status: 200 (success) ,400 (bad code), 418 (failed getting data)
-app3000.get('/', async (req, res) => {
+app3000.get('/', asyncAppWrapper(async (req, res) => {
   const authCode = req.query.code;
 
   await updateTokenFromCode(authCode);
@@ -1933,9 +1950,9 @@ app3000.get('/', async (req, res) => {
   }
 
   return showSimulatorSummary(req, res, vehicleList);
-});
+}));
 
-app.get('/sim/html', (req, res) => showSimulatorSummary(req, res, undefined));
+app.get('/sim/html', asyncAppWrapper((req, res) => showSimulatorSummary(req, res, undefined)));
 
 app.use((req, res) => {
   res.status(404).send('The route you requested is not supported by this simulator. Verify GET/POST usage and path.');
@@ -1943,6 +1960,22 @@ app.use((req, res) => {
 
 app3000.use((req, res) => {
   res.status(404).send('The https route you requested is not supported.');
+});
+
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  // SECURITY: We are showing potentially user controlled data and potentially internal data.
+  // TODO: Replace with logging API and just return 'friendly message'.
+  res.status(500).send(`<pre>Unhandled error, please report the following stacktrace at https://github.com/jamisonderek/ford-connect-sim/issues!\n\n${err.stack}</pre>`);
+});
+
+// eslint-disable-next-line no-unused-vars
+app3000.use((err, req, res, next) => {
+  console.error(err.stack);
+  // SECURITY: We are showing potentially user controlled data and potentially internal data.
+  // TODO: Replace with logging API and just return 'friendly message'.
+  res.status(500).send(`<pre>Unhandled error, please report the following stacktrace at https://github.com/jamisonderek/ford-connect-sim/issues!\n\n${err.stack}</pre>`);
 });
 
 exports.server = app;
