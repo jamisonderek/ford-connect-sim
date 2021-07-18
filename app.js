@@ -1822,7 +1822,7 @@ async function showSimulatorSummary(req, res, vehicleList) {
   codeExpireTimestamp = Date.now() + getCodeTimeout() * 1000;
 
   // If code was wildcard, don't reset it.
-  if (code !=='*') {
+  if (code !== '*') {
     code = newCode;
   }
 
