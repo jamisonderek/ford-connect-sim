@@ -1758,13 +1758,7 @@ app.post('/sim/clone', async (req, res) => {
   }
 
   // Use refreshToken to get an access token.
-  if (!await refreshToken(getAccessTokenTimeout(), actualRefreshToken)) {
-    res.statusCode = 400;
-    return res.json({
-      status: 'FAILED',
-      msg: 'Failed to refresh token using refresh_token.',
-    });
-  }
+  await refreshToken(getAccessTokenTimeout(), actualRefreshToken);
 
   return clone(req, res);
 });
@@ -1862,7 +1856,6 @@ async function showSimulatorSummary(req, res, vehicleList) {
     }
     const openClass = (openDoors.length === 0) ? 'data' : 'data warn';
     const carTop = isEV(veh.info.engineType) ? -270 : -233;
-    console.log(JSON.stringify(veh.info));
 
     msg += `<h2 class="line">Vehicle id: <span class="vid">${veh.vehicle.vehicleId}</span></h2>`;
     const engineType = veh.info.engineType === 'ICE' ? 'ICE (Internal Combustion Engine)' : veh.info.engineType;
@@ -1913,15 +1906,8 @@ async function showSimulatorSummary(req, res, vehicleList) {
 app3000.get('/', async (req, res) => {
   const authCode = req.query.code;
 
-  if (!await updateTokenFromCode(authCode)) {
-    res.statusCode = 400;
-    return res.send('The code parameter was invalid.');
-  }
-
-  if (!await refreshToken(getAccessTokenTimeout(), undefined)) {
-    res.statusCode = 400;
-    return res.send('Failed to refresh token using refresh_token.');
-  }
+  await updateTokenFromCode(authCode);
+  await refreshToken(getAccessTokenTimeout(), undefined);
 
   const response = await getVehicles();
   if (response.statusCode !== 200 || response.body.status !== 'SUCCESS') {
