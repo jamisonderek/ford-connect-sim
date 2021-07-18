@@ -89,7 +89,7 @@ async function $updateToken(data) {
   token.refreshToken = json.refresh_token;
 
   // TODO: Use a logging framework.
-  console.log('Updated access and refresh tokens.');
+  console.log(`Updated access and refresh tokens from ${oauthhostname}.`);
   return true;
 }
 
